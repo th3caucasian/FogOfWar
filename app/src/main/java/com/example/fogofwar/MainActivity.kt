@@ -29,6 +29,8 @@ class MainActivity : AppCompatActivity(), MapListener, GpsStatus.Listener {
     lateinit var controller: IMapController
     lateinit var mMyLocationOverlay: MyLocationNewOverlay
     lateinit var mButton: Button
+    lateinit var currentIcon: Bitmap
+    lateinit var scaledIcon: Bitmap
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding = ActivityMainBinding.inflate(layoutInflater)
@@ -49,17 +51,16 @@ class MainActivity : AppCompatActivity(), MapListener, GpsStatus.Listener {
         mMyLocationOverlay.enableMyLocation()
         mMyLocationOverlay.enableFollowLocation()
         mMyLocationOverlay.isDrawAccuracyEnabled()       // ???
+        mMyLocationOverlay.setPersonAnchor(0.5F, 0.5F)
         mMyLocationOverlay.runOnFirstFix {
             runOnUiThread {
                 controller.setCenter(mMyLocationOverlay.myLocation)
                 controller.animateTo(mMyLocationOverlay.myLocation)
             }
         }
-        mMap.overlays.add(mMyLocationOverlay)
-        mMap.addMapListener(this)
 
-        val currentIcon = BitmapFactory.decodeResource(resources, R.drawable.resource__)                // Если использовать эту переменную - иконка не отображается (видимо дело в размере)
-        val scaledIcon = Bitmap.createScaledBitmap(currentIcon, 100, 100, true)  // Если использовать эту - то всё отлично работает
+        currentIcon = BitmapFactory.decodeResource(resources, R.drawable.location_arrow_2)                // Если использовать эту переменную - иконка не отображается (видимо дело в размере)
+        scaledIcon = Bitmap.createScaledBitmap(currentIcon, 50, 50, true)  // Если использовать эту - то всё отлично работает
         if (currentIcon == null)
             Log.e("TAG", "ICON FAIL")
         else
@@ -67,7 +68,8 @@ class MainActivity : AppCompatActivity(), MapListener, GpsStatus.Listener {
 
 
         controller.setZoom(18.0)
-
+        mMap.overlays.add(mMyLocationOverlay)
+        mMap.addMapListener(this)
         Log.e("TAG", "onCreate:in ${controller.zoomIn()}")
         Log.e("TAG", "onCreate:out ${controller.zoomOut()}")
     }
