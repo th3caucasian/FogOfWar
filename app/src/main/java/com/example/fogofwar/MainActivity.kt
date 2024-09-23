@@ -26,6 +26,7 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.IMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
+import kotlin.math.abs
 
 class MainActivity : AppCompatActivity(), MapListener, SensorEventListener {
     private lateinit var mMap: MapView
@@ -35,6 +36,7 @@ class MainActivity : AppCompatActivity(), MapListener, SensorEventListener {
     private lateinit var scaledIcon: Bitmap
     private lateinit var sensorManager: SensorManager
     private var azimuth = 0F
+    private var prevAzimuth = 0F
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding = ActivityMainBinding.inflate(layoutInflater)
@@ -63,7 +65,7 @@ class MainActivity : AppCompatActivity(), MapListener, SensorEventListener {
             }
         }
         currentIcon = BitmapFactory.decodeResource(resources, R.drawable.location_arrow_2)        // Если использовать эту переменную - иконка не отображается (видимо дело в размере)
-        scaledIcon = Bitmap.createScaledBitmap(currentIcon, 50, 50, true)  // Если использовать эту - то всё отлично работает
+        scaledIcon = Bitmap.createScaledBitmap(currentIcon, 100, 100, true)  // Если использовать эту - то всё отлично работает
         mMyLocationOverlay.setPersonIcon(scaledIcon)
         mMyLocationOverlay.setDirectionIcon(scaledIcon)
         mMyLocationOverlay.setPersonAnchor(0.5F, 0.5F)
@@ -107,9 +109,18 @@ class MainActivity : AppCompatActivity(), MapListener, SensorEventListener {
     private fun updateIconRotation(inAzimuth: Float) {
         val rotMatrix = Matrix()
         rotMatrix.postRotate(inAzimuth, scaledIcon.width / 2F, scaledIcon.height / 2F)
-        val iconCanvas = Canvas(scaledIcon)
-        iconCanvas.concat(rotMatrix)
-        iconCanvas.drawBitmap(scaledIcon, 0.5F, 0.5F, null)
+        val rotatedBitmap = Bitmap.createBitmap(
+            scaledIcon,
+            0,
+            0,
+            scaledIcon.getWidth(),
+            scaledIcon.getHeight(),
+            rotMatrix,
+            true
+        )
+        mMyLocationOverlay.setPersonIcon(rotatedBitmap) // Установите новую иконку
+        mMyLocationOverlay.setPersonAnchor(0.5F, 0.5F)
+        mMap.invalidate()
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
@@ -120,6 +131,7 @@ class MainActivity : AppCompatActivity(), MapListener, SensorEventListener {
         if (SensorManager.getRotationMatrix(rotationMatrix, null, gravity, geomagnetic))
         {
             SensorManager.getOrientation(rotationMatrix, orientation)
+            prevAzimuth = azimuth
             azimuth = Math.toDegrees(orientation[0].toDouble()).toFloat()
             updateIconRotation(azimuth)
         }
