@@ -1,15 +1,20 @@
 package com.example.fogofwar
 
+import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Matrix
 import android.graphics.Rect
-import android.location.Location
+import android.media.metrics.Event
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.os.LocaleListCompat
 import com.example.fogofwar.databinding.ActivityMainBinding
 import org.osmdroid.api.IMapController
 import org.osmdroid.config.Configuration
@@ -19,15 +24,17 @@ import org.osmdroid.events.ZoomEvent
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
+import org.osmdroid.views.overlay.mylocation.IMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 
-
-class MainActivity : AppCompatActivity(), MapListener {
+class MainActivity : AppCompatActivity(), MapListener, SensorEventListener {
     private lateinit var mMap: MapView
     private lateinit var controller: IMapController
     private lateinit var mMyLocationOverlay: MyLocationNewOverlay
     private lateinit var currentIcon: Bitmap
     private lateinit var scaledIcon: Bitmap
+    private lateinit var sensorManager: SensorManager
+    private var azimuth = 0F
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding = ActivityMainBinding.inflate(layoutInflater)
@@ -41,18 +48,10 @@ class MainActivity : AppCompatActivity(), MapListener {
         mMap.mapCenter          // ???
         mMap.setMultiTouchControls(true)
         mMap.getLocalVisibleRect(Rect())
-
         mMyLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(this), mMap)
-//        {
-//            override fun onLocationChanged(location: Location?, source: GpsMyLocationProvider?) {
-//                super.onLocationChanged(location, source)
-//            }
-//        }
 
         controller = mMap.controller
-
-
-        val gpsProvider = GpsMyLocationProvider(this)
+        controller.setZoom(18.0)
         mMyLocationOverlay.enableMyLocation()
         mMyLocationOverlay.enableFollowLocation()
         mMyLocationOverlay.isDrawAccuracyEnabled        // ???
@@ -66,9 +65,16 @@ class MainActivity : AppCompatActivity(), MapListener {
         currentIcon = BitmapFactory.decodeResource(resources, R.drawable.location_arrow_2)        // Если использовать эту переменную - иконка не отображается (видимо дело в размере)
         scaledIcon = Bitmap.createScaledBitmap(currentIcon, 50, 50, true)  // Если использовать эту - то всё отлично работает
         mMyLocationOverlay.setPersonIcon(scaledIcon)
+        mMyLocationOverlay.setDirectionIcon(scaledIcon)
+        mMyLocationOverlay.setPersonAnchor(0.5F, 0.5F)
+        mMyLocationOverlay.setDirectionAnchor(0.5F, 0.5F)
 
+        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        val magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
+        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI)
+        sensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_UI)
 
-        controller.setZoom(18.0)
         mMap.overlays.add(mMyLocationOverlay)
         mMap.addMapListener(this)
         Log.e("TAG", "onCreate:in ${controller.zoomIn()}")
@@ -86,7 +92,6 @@ class MainActivity : AppCompatActivity(), MapListener {
         return false
     }
 
-
     fun toMyLocationButton(view: View?) {
         runOnUiThread {
             controller.animateTo(mMyLocationOverlay.myLocation)
@@ -94,4 +99,44 @@ class MainActivity : AppCompatActivity(), MapListener {
         controller.setZoom(18.0)
     }
 
+    private var gravity = FloatArray(3)
+    private var geomagnetic = FloatArray(3)
+    private var rotationMatrix = FloatArray(9)
+    private var orientation = FloatArray(3)
+
+    private fun updateIconRotation(inAzimuth: Float) {
+        val rotMatrix = Matrix()
+        rotMatrix.postRotate(inAzimuth, scaledIcon.width / 2F, scaledIcon.height / 2F)
+        val iconCanvas = Canvas(scaledIcon)
+        iconCanvas.concat(rotMatrix)
+        iconCanvas.drawBitmap(scaledIcon, 0.5F, 0.5F, null)
+    }
+
+    override fun onSensorChanged(event: SensorEvent?) {
+        when(event?.sensor?.type) {
+            Sensor.TYPE_ACCELEROMETER -> gravity = event.values.clone()
+            Sensor.TYPE_MAGNETIC_FIELD -> geomagnetic = event.values.clone()
+        }
+        if (SensorManager.getRotationMatrix(rotationMatrix, null, gravity, geomagnetic))
+        {
+            SensorManager.getOrientation(rotationMatrix, orientation)
+            azimuth = Math.toDegrees(orientation[0].toDouble()).toFloat()
+            updateIconRotation(azimuth)
+        }
+    }
+
+    override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
+        // not used in application
+    }
+
+    override fun onPause() {
+        super.onPause()
+        sensorManager.unregisterListener(this)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_UI)
+        sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), SensorManager.SENSOR_DELAY_UI)
+    }
 }
