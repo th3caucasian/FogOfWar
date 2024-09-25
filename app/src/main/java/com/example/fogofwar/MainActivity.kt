@@ -105,20 +105,20 @@ class MainActivity : AppCompatActivity(), MapListener, SensorEventListener {
     private var geomagnetic = FloatArray(3)
     private var rotationMatrix = FloatArray(9)
     private var orientation = FloatArray(3)
+    private val smoothing = 5
+    private var azimuths = mutableListOf<Float>()
+    private var avgAzimuth = 0F
 
     private fun updateIconRotation(inAzimuth: Float) {
+        azimuths.add(inAzimuth)
+        if (azimuths.size > smoothing)
+            azimuths.removeAt(0)
+        avgAzimuth = azimuths.sum() / azimuths.size
         val rotMatrix = Matrix()
-        rotMatrix.postRotate(inAzimuth, scaledIcon.width / 2F, scaledIcon.height / 2F)
-        val rotatedBitmap = Bitmap.createBitmap(
-            scaledIcon,
-            0,
-            0,
-            scaledIcon.getWidth(),
-            scaledIcon.getHeight(),
-            rotMatrix,
-            true
-        )
-        mMyLocationOverlay.setPersonIcon(rotatedBitmap) // Установите новую иконку
+        rotMatrix.postRotate(avgAzimuth, scaledIcon.width / 2F, scaledIcon.height / 2F)
+        //Log.e("AZIMUTH", "Azimuth: ${inAzimuth}")
+        val rotatedBitmap = Bitmap.createBitmap(scaledIcon,0,0,scaledIcon.width, scaledIcon.height, rotMatrix,true)
+        mMyLocationOverlay.setPersonIcon(rotatedBitmap)
         mMyLocationOverlay.setPersonAnchor(0.5F, 0.5F)
         mMap.invalidate()
     }
@@ -133,6 +133,7 @@ class MainActivity : AppCompatActivity(), MapListener, SensorEventListener {
             SensorManager.getOrientation(rotationMatrix, orientation)
             prevAzimuth = azimuth
             azimuth = Math.toDegrees(orientation[0].toDouble()).toFloat()
+            Log.e("AZIMUTH", "Azimuth: ${azimuth}")
             updateIconRotation(azimuth)
         }
     }
