@@ -37,6 +37,7 @@ class MainActivity : AppCompatActivity(), MapListener, SensorEventListener {
     private lateinit var sensorManager: SensorManager
     private var azimuth = 0F
     private var prevAzimuth = 0F
+    private var kFiler = KalmanFilter()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding = ActivityMainBinding.inflate(layoutInflater)
@@ -105,7 +106,7 @@ class MainActivity : AppCompatActivity(), MapListener, SensorEventListener {
     private var geomagnetic = FloatArray(3)
     private var rotationMatrix = FloatArray(9)
     private var orientation = FloatArray(3)
-    private val smoothing = 75
+    private val smoothing = 60
     private var azimuths = mutableListOf<Float>()
     private var avgAzimuth = 0F
 
@@ -133,9 +134,9 @@ class MainActivity : AppCompatActivity(), MapListener, SensorEventListener {
             SensorManager.getOrientation(rotationMatrix, orientation)
             prevAzimuth = azimuth
             azimuth = Math.toDegrees(orientation[0].toDouble()).toFloat()
-            Log.e("AZIMUTH", "Azimuth: ${gravity[0]}, ${gravity[1]}, ${gravity[2]}")
-            if (abs(prevAzimuth - azimuth) < 5)
-                updateIconRotation(azimuth)
+            //if (abs(prevAzimuth - azimuth) < 5)
+            val filteredAzimuth = kFiler.update(azimuth)
+            updateIconRotation(filteredAzimuth)
         }
     }
 
