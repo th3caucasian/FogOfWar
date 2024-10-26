@@ -28,6 +28,7 @@ import org.osmdroid.events.ZoomEvent
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 
@@ -41,6 +42,7 @@ class MainActivity : AppCompatActivity(), MapListener, SensorEventListener {
     private lateinit var sensorManager: SensorManager
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
+    private lateinit var compassOrientationProvider: InternalCompassOrientationProvider
     private var azimuth = 0F
     private var prevAzimuth = 0F
     private var kFilter = KalmanFilter()
@@ -63,16 +65,23 @@ class MainActivity : AppCompatActivity(), MapListener, SensorEventListener {
         controller.setZoom(18.0)
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 1000)
+        locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 500)
             .setWaitForAccurateLocation(false)
             .setMinUpdateDistanceMeters(1f)
             .setMinUpdateIntervalMillis(1000)
             .build()
 
+        compassOrientationProvider = InternalCompassOrientationProvider(this)
+        compassOrientationProvider.startOrientationProvider { azimuth, _ ->
+            // Обработка азимута, определяющего текущее направление устройства
+            updateIconRotation(azimuth)
+        }
+
+
         mMyLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(this), mMap)
         mMyLocationOverlay.enableMyLocation()
         mMyLocationOverlay.enableFollowLocation()
-        mMyLocationOverlay.isDrawAccuracyEnabled = true
+        mMyLocationOverlay.isDrawAccuracyEnabled = false
         mMyLocationOverlay.setPersonAnchor(0.5F, 0.5F)
 //        mMyLocationOverlay.runOnFirstFix {
 //            runOnUiThread {
@@ -174,7 +183,7 @@ class MainActivity : AppCompatActivity(), MapListener, SensorEventListener {
             azimuths.removeAt(0)
         avgAzimuth = azimuths.sum() / azimuths.size
         val rotMatrix = Matrix()
-        rotMatrix.postRotate(avgAzimuth, scaledIcon.width / 2F, scaledIcon.height / 2F)
+        rotMatrix.postRotate(inAzimuth, scaledIcon.width / 2F, scaledIcon.height / 2F)
         Log.e("AZIMUTH", "Azimuth: ${avgAzimuth}")
         val rotatedBitmap = Bitmap.createBitmap(scaledIcon,0,0,scaledIcon.width, scaledIcon.height, rotMatrix,true)
         mMyLocationOverlay.setPersonIcon(rotatedBitmap)
@@ -194,7 +203,7 @@ class MainActivity : AppCompatActivity(), MapListener, SensorEventListener {
             SensorManager.getOrientation(rotationMatrix, orientation)
             azimuth = Math.toDegrees(orientation[0].toDouble()).toFloat()
             //val filteredAzimuth = kFilter.update(azimuth)
-            updateIconRotation(azimuth)
+           // updateIconRotation(azimuth)
         }
     }
 
