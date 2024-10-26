@@ -32,7 +32,7 @@ import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 
-class MainActivity : AppCompatActivity(), MapListener, SensorEventListener {
+class MainActivity : AppCompatActivity(), MapListener /* SensorEventListener*/ {
     private lateinit var mMap: MapView
     private lateinit var controller: IMapController
     private lateinit var mMyLocationOverlay: MyLocationNewOverlay
@@ -45,7 +45,6 @@ class MainActivity : AppCompatActivity(), MapListener, SensorEventListener {
     private lateinit var compassOrientationProvider: InternalCompassOrientationProvider
     private var azimuth = 0F
     private var prevAzimuth = 0F
-    private var kFilter = KalmanFilter()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,7 +55,6 @@ class MainActivity : AppCompatActivity(), MapListener, SensorEventListener {
             applicationContext,
             getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE)
         )
-
         mMap = binding.osmmap
         mMap.setTileSource(TileSourceFactory.MAPNIK)
         mMap.setMultiTouchControls(true)
@@ -64,6 +62,18 @@ class MainActivity : AppCompatActivity(), MapListener, SensorEventListener {
         controller = mMap.controller
         controller.setZoom(18.0)
 
+
+        currentIcon = BitmapFactory.decodeResource(resources, R.drawable.location_arrow_2)         // Если использовать эту переменную - иконка не отображается (видимо дело в размере)
+        scaledIcon = Bitmap.createScaledBitmap(currentIcon, 100, 100, true)  // Если использовать эту - то всё отлично работает
+        mMyLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(this), mMap)
+        mMyLocationOverlay.enableMyLocation()
+        mMyLocationOverlay.enableFollowLocation()
+        mMyLocationOverlay.isDrawAccuracyEnabled = false
+        mMyLocationOverlay.setPersonAnchor(0.5F, 0.5F)
+        mMyLocationOverlay.setPersonIcon(scaledIcon)
+        mMyLocationOverlay.setPersonAnchor(0.5F, 0.5F)
+
+        // Активация локации (отслеживание перемещения)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 500)
             .setWaitForAccurateLocation(false)
@@ -71,39 +81,18 @@ class MainActivity : AppCompatActivity(), MapListener, SensorEventListener {
             .setMinUpdateIntervalMillis(1000)
             .build()
 
+        // Активация поворота иконки
         compassOrientationProvider = InternalCompassOrientationProvider(this)
         compassOrientationProvider.startOrientationProvider { azimuth, _ ->
             // Обработка азимута, определяющего текущее направление устройства
             updateIconRotation(azimuth)
         }
-
-
-        mMyLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(this), mMap)
-        mMyLocationOverlay.enableMyLocation()
-        mMyLocationOverlay.enableFollowLocation()
-        mMyLocationOverlay.isDrawAccuracyEnabled = false
-        mMyLocationOverlay.setPersonAnchor(0.5F, 0.5F)
-//        mMyLocationOverlay.runOnFirstFix {
-//            runOnUiThread {
-//                val location = mMyLocationOverlay.myLocation
-//                val geoPoint = GeoPoint(location.latitude, location.longitude)
-//                controller.setCenter(location)
-//                controller.animateTo(location)
-//                mUpperOverlay.addClearedTile(geoPoint)
-//            }
-//        }
-        currentIcon = BitmapFactory.decodeResource(resources, R.drawable.location_arrow_2)        // Если использовать эту переменную - иконка не отображается (видимо дело в размере)
-        scaledIcon = Bitmap.createScaledBitmap(currentIcon, 100, 100, true)  // Если использовать эту - то всё отлично работает
-        mMyLocationOverlay.setPersonIcon(scaledIcon)
-        mMyLocationOverlay.setDirectionIcon(scaledIcon)
-        mMyLocationOverlay.setPersonAnchor(0.5F, 0.5F)
-        mMyLocationOverlay.setDirectionAnchor(0.5F, 0.5F)
-
-        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-        val magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
-        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI)
-        sensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_UI)
+//        TODO("Разобраться также")
+//        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+//        val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+//        val magnetometer = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
+//        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_UI)
+//        sensorManager.registerListener(this, magnetometer, SensorManager.SENSOR_DELAY_UI)
 
 
         mUpperOverlay = UpperOverlay()
@@ -144,6 +133,68 @@ class MainActivity : AppCompatActivity(), MapListener, SensorEventListener {
         Log.d("LOCATION_UPDATE", "Location: ${geoPoint.latitude}, ${geoPoint.longitude}")
     }
 
+    // Функция - логика нажатия кнопки возвращения к своей локации
+    fun toMyLocationButton(view: View?) {
+        runOnUiThread {
+            controller.animateTo(mMyLocationOverlay.myLocation)
+        }
+        controller.setZoom(18.0)
+    }
+
+//    TODO("Разобраться и убрать переменные")
+//    private var gravity = FloatArray(3)
+//    private var geomagnetic = FloatArray(3)
+//    private var rotationMatrix = FloatArray(9)
+//    private var orientation = FloatArray(3)
+//    private val smoothing = 15     // сглаживание значений азимута (чем больше - тем сильнее сглаживание)
+//    private var azimuths = mutableListOf<Float>()   // массив значений азимута
+//    private var avgAzimuth = 0F     // итоговое сглаженное значение азимута
+
+    // Функция обновления поворота иконки (стрелки пользователя)
+    private fun updateIconRotation(inAzimuth: Float) {
+        // TODO("Разобраться с этими строками")
+//        azimuths.add(inAzimuth)
+//        if (azimuths.size > smoothing)
+//            azimuths.removeAt(0)
+//        avgAzimuth = azimuths.sum() / azimuths.size
+        val rotMatrix = Matrix()
+        rotMatrix.postRotate(inAzimuth, scaledIcon.width / 2F, scaledIcon.height / 2F)
+        val rotatedBitmap = Bitmap.createBitmap(scaledIcon,0,0,scaledIcon.width, scaledIcon.height, rotMatrix,true)
+        mMyLocationOverlay.setPersonIcon(rotatedBitmap)
+        mMyLocationOverlay.setPersonAnchor(0.5F, 0.5F)
+        mMap.invalidate()
+    }
+
+
+    // Функция, отслеживающая данные с датчиков, обновляющая азимут и вызвыающая функцию обновления поворота иконки пользователя
+    // TODO("Разобаться с этой функцией")
+//    override fun onSensorChanged(event: SensorEvent?) {
+//        when(event?.sensor?.type) {
+//            Sensor.TYPE_ACCELEROMETER -> gravity = event.values.clone()
+//            Sensor.TYPE_MAGNETIC_FIELD -> geomagnetic = event.values.clone()
+//        }
+//        if (SensorManager.getRotationMatrix(rotationMatrix, null, gravity, geomagnetic))
+//        {
+//            SensorManager.getOrientation(rotationMatrix, orientation)
+//            azimuth = Math.toDegrees(orientation[0].toDouble()).toFloat()
+//           // updateIconRotation(azimuth)
+//        }
+//    }
+
+    override fun onPause() {
+        super.onPause()
+        compassOrientationProvider.stopOrientationProvider()
+        TODO("Разобраться с сенсорами")
+        //sensorManager.unregisterListener(this)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        compassOrientationProvider.startOrientationProvider{azimuth, _ -> updateIconRotation(azimuth)}
+        TODO("Разобраться с сенсорами")
+        //sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_UI)
+        //sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), SensorManager.SENSOR_DELAY_UI)
+    }
 
     override fun onScroll(event: ScrollEvent?): Boolean {
         Log.e("TAG", "onCreate:la ${event?.source?.mapCenter?.latitude}")
@@ -156,69 +207,8 @@ class MainActivity : AppCompatActivity(), MapListener, SensorEventListener {
         return false
     }
 
-    // Функция - логика нажатия кнопки возвращения к своей локации
-    fun toMyLocationButton(view: View?) {
-        runOnUiThread {
-            controller.animateTo(mMyLocationOverlay.myLocation)
-        }
-        controller.setZoom(18.0)
-    }
-
-    fun updateLocationButton(view: View?) {
-        // asddsad
-    }
-
-    private var gravity = FloatArray(3)
-    private var geomagnetic = FloatArray(3)
-    private var rotationMatrix = FloatArray(9)
-    private var orientation = FloatArray(3)
-    private val smoothing = 15     // сглаживание значений азимута (чем больше - тем сильнее сглаживание)
-    private var azimuths = mutableListOf<Float>()   // массив значений азимута
-    private var avgAzimuth = 0F     // итоговое сглаженное значение азимута
-
-    // Функция обновления поворота иконки (стрелки пользователя)
-    private fun updateIconRotation(inAzimuth: Float) {
-        azimuths.add(inAzimuth)
-        if (azimuths.size > smoothing)
-            azimuths.removeAt(0)
-        avgAzimuth = azimuths.sum() / azimuths.size
-        val rotMatrix = Matrix()
-        rotMatrix.postRotate(inAzimuth, scaledIcon.width / 2F, scaledIcon.height / 2F)
-        Log.e("AZIMUTH", "Azimuth: ${avgAzimuth}")
-        val rotatedBitmap = Bitmap.createBitmap(scaledIcon,0,0,scaledIcon.width, scaledIcon.height, rotMatrix,true)
-        mMyLocationOverlay.setPersonIcon(rotatedBitmap)
-        mMyLocationOverlay.setPersonAnchor(0.5F, 0.5F)
-        mMap.invalidate()
-    }
-
-
-    // Функция, отслеживающая данные с датчиков, обновляющая азимут и вызвыающая функцию обновления поворота иконки пользователя
-    override fun onSensorChanged(event: SensorEvent?) {
-        when(event?.sensor?.type) {
-            Sensor.TYPE_ACCELEROMETER -> gravity = event.values.clone()
-            Sensor.TYPE_MAGNETIC_FIELD -> geomagnetic = event.values.clone()
-        }
-        if (SensorManager.getRotationMatrix(rotationMatrix, null, gravity, geomagnetic))
-        {
-            SensorManager.getOrientation(rotationMatrix, orientation)
-            azimuth = Math.toDegrees(orientation[0].toDouble()).toFloat()
-            //val filteredAzimuth = kFilter.update(azimuth)
-           // updateIconRotation(azimuth)
-        }
-    }
-
-    override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
-        // not used in application
-    }
-
-    override fun onPause() {
-        super.onPause()
-        sensorManager.unregisterListener(this)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_UI)
-        sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), SensorManager.SENSOR_DELAY_UI)
-    }
+//    TODO("Если убираю SensorEventListener - это тоже убрать")
+//    override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
+//        // not used in application
+//    }
 }
