@@ -4,12 +4,14 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Point
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Overlay
 
-class UpperOverlay: Overlay() {
+class UpperOverlay(): Overlay() {
     private val clearedTiles: MutableList<GeoPoint> = mutableListOf()
 
     fun addClearedTile(geoPoint: GeoPoint) {
@@ -22,21 +24,25 @@ class UpperOverlay: Overlay() {
         if (canvas != null && mapView != null)
         {
             val paint = Paint()
-            paint.color = Color.WHITE
+            paint.color = Color.BLACK
             paint.style = Paint.Style.FILL
+            paint.alpha = 128
+            val rect = Rect(0, 0, canvas.width, canvas.height)
+            val layer = canvas.saveLayer(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), paint)
+            canvas.drawRect(rect, paint)
 
+
+            val clearPaint = Paint()
+            clearPaint.color = Color.TRANSPARENT
+            clearPaint.style = Paint.Style.FILL
+            clearPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
             for (point in clearedTiles) {
                 val screenPoint = Point()
                 mapView.projection.toPixels(point, screenPoint)
-
-                val rect = Rect(screenPoint.x - 30, screenPoint.y - 30, screenPoint.x + 30, screenPoint.y + 30)
-                canvas.drawRect(rect, paint)
+                val rect2 = Rect(screenPoint.x - 50, screenPoint.y - 50, screenPoint.x + 50, screenPoint.y + 50)
+                canvas.drawCircle((screenPoint.x).toFloat(), (screenPoint.y).toFloat(), 50f, clearPaint)
             }
-
+            canvas.restoreToCount(layer)
         }
-
     }
-
-
-
 }
