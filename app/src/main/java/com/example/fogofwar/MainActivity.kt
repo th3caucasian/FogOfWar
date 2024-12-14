@@ -12,6 +12,8 @@ import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import com.example.features.updatePoints.UpdatePointsReceiveRemote
+import com.example.fogofwar.additions.Point
 import com.example.fogofwar.backend.BackendAPI
 import com.example.fogofwar.backend.remotes.get_points.GetPointsReceiveRemote
 import com.example.fogofwar.databinding.ActivityMainBinding
@@ -45,6 +47,9 @@ class MainActivity : AppCompatActivity(), MapListener {
     private lateinit var locationRequest: LocationRequest
     private lateinit var compassOrientationProvider: InternalCompassOrientationProvider
     private lateinit var backendAPI: BackendAPI
+    private var userPoints = mutableListOf<Point>()
+    private var userClearedPoints = mutableListOf<Point>()
+    private var userPhoneNumber = "89880888306"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,22 +59,16 @@ class MainActivity : AppCompatActivity(), MapListener {
             applicationContext,
             getSharedPreferences(getString(R.string.app_name), MODE_PRIVATE)
         )
-        setupMap(binding) // здесь была локация 1
-        setupLocation()   // здесь была мапа1
-        setupRetrofit()
-        // здесь была локация 2
 
+        setupMap(binding)
+        setupLocation()
+        setupRetrofit()
         fogOverlay = FogOverlay()
         map.overlays.add(fogOverlay)
         map.overlays.add(myLocationOverlay)
-        // лок апд был здесь
 
-        CoroutineScope(Dispatchers.IO).launch {
-            val getter = backendAPI.getPoints(GetPointsReceiveRemote("123")).body()?.points
-            Log.e("GET", "$getter")
-        }
+        loadUserClearedPoints()
     }
-
 
 
     private fun setupMap(activityBinding: ActivityMainBinding) {
@@ -85,21 +84,21 @@ class MainActivity : AppCompatActivity(), MapListener {
 
     }
 
+
+
     private fun setupLocation() {
         myLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(this), map)
         myLocationOverlay.enableMyLocation()
-        myLocationOverlay.enableFollowLocation()
         myLocationOverlay.isDrawAccuracyEnabled = false
         myLocationOverlay.setPersonAnchor(0.5F, 0.5F)
         myLocationOverlay.setPersonIcon(scaledIcon)
-        myLocationOverlay.setPersonAnchor(0.5F, 0.5F)
 
         // Активация локации (отслеживание перемещения)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
         locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 500)
             .setWaitForAccurateLocation(false)
-            .setMinUpdateDistanceMeters(1f)
-            .setMinUpdateIntervalMillis(1000)
+            .setMinUpdateDistanceMeters(10f)
+            .setMinUpdateIntervalMillis(500)
             .build()
 
         // Активация поворота иконки
@@ -108,9 +107,10 @@ class MainActivity : AppCompatActivity(), MapListener {
             // Обработка азимута, определяющего текущее направление устройства
             updateIconRotation(azimuth)
         }
-
         startLocationUpdates()
     }
+
+
 
     private fun setupRetrofit() {
         val retrofit = Retrofit.Builder()
@@ -119,6 +119,7 @@ class MainActivity : AppCompatActivity(), MapListener {
             .build()
         backendAPI = retrofit.create(BackendAPI::class.java)
     }
+
 
 
     private fun startLocationUpdates() {
@@ -144,20 +145,57 @@ class MainActivity : AppCompatActivity(), MapListener {
         }, null)
     }
 
+
     // Вызывается при смене локации пользователем
     private fun updateUserLocation(location: Location) {
         val geoPoint = GeoPoint(location.latitude, location.longitude)
+        val point = Point(location.latitude, location.longitude)
+
+        if (!userPoints.contains(point))
+            userClearedPoints += point
+        if (userClearedPoints.size == 1) {
+            try {
+                CoroutineScope(Dispatchers.IO).launch {
+                    val updatePointsReceiveRemote = UpdatePointsReceiveRemote(userPhoneNumber, userClearedPoints)
+                    val result = backendAPI.updatePoints(updatePointsReceiveRemote)
+                    //userClearedPoints.clear()
+                }
+            }
+            catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
         fogOverlay.addClearedTile(geoPoint)
         Log.d("LOCATION_UPDATE", "Location: ${geoPoint.latitude}, ${geoPoint.longitude}")
     }
+
+
+
+    private fun loadUserClearedPoints() {
+        val getPointsReceiveRemote = GetPointsReceiveRemote(userPhoneNumber)
+        CoroutineScope(Dispatchers.IO).launch {
+            val response = backendAPI.getPoints(getPointsReceiveRemote).body()
+            if (response != null) {
+                userPoints = response.points!!.toMutableList()
+                for (point in userPoints)
+                {
+                    val pointAsGeo = GeoPoint(point.latitude, point.longitude)
+                    fogOverlay.addClearedTile(pointAsGeo)
+                }
+            }
+        }
+    }
+
 
     // КНОПКА. Функция - логика нажатия кнопки возвращения к своей локации
     fun toMyLocationButton(view: View?) {
         runOnUiThread {
             controller.animateTo(myLocationOverlay.myLocation)
+            controller.setZoom(10.0)
         }
-        controller.setZoom(18.0)
     }
+
+
 
     // Функция обновления поворота иконки (стрелки пользователя)
     private fun updateIconRotation(inAzimuth: Float) {
@@ -168,6 +206,9 @@ class MainActivity : AppCompatActivity(), MapListener {
         myLocationOverlay.setPersonAnchor(0.5F, 0.5F)
         map.invalidate()
     }
+
+
+
 
     override fun onPause() {
         super.onPause()
@@ -184,6 +225,7 @@ class MainActivity : AppCompatActivity(), MapListener {
     }
 
     override fun onZoom(event:ZoomEvent?): Boolean {
+        map.invalidate()
         return false
     }
 

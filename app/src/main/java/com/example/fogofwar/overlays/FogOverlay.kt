@@ -1,5 +1,6 @@
 package com.example.fogofwar.overlays
 
+import android.graphics.BlurMaskFilter
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -14,6 +15,7 @@ import org.osmdroid.views.overlay.Overlay
 
 class FogOverlay(): Overlay() {
     private val clearedTiles: MutableList<GeoPoint> = mutableListOf()
+    private val baseRadius = 50.0
 
     fun addClearedTile(geoPoint: GeoPoint) {
         clearedTiles.add(geoPoint)
@@ -22,29 +24,34 @@ class FogOverlay(): Overlay() {
     override fun draw(canvas: Canvas?, mapView: MapView, shadow: Boolean) {
         super.draw(canvas, mapView, shadow)
 
-        if (canvas != null && mapView != null)
+        if (canvas != null)
         {
             val paint = Paint()
             paint.color = Color.BLACK
             paint.style = Paint.Style.FILL
-            paint.alpha = 128
+            paint.alpha = 150
             val rect = Rect(0, 0, canvas.width, canvas.height)
             val layer = canvas.saveLayer(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), paint)
             canvas.drawRect(rect, paint)
 
+            val zoomLevel = mapView.zoomLevelDouble
+            val scaledRadius = ((baseRadius * zoomLevel) / (18 * baseRadius)).toFloat()
+            Log.d("ZOOM", "$zoomLevel")
 
             val clearPaint = Paint()
             clearPaint.color = Color.TRANSPARENT
             clearPaint.style = Paint.Style.FILL
             clearPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
-            for (point in clearedTiles) {
+            //clearPaint.maskFilter = BlurMaskFilter(scaledRadius, BlurMaskFilter.Blur.NORMAL)
+
+
+            for (geoPoint in clearedTiles) {
                 val screenPoint = Point()
-                mapView.projection.toPixels(point, screenPoint)
-                Log.e("POINTS", "GeoPoint: ${point.longitude}, ${point.altitude}, ScreenPoint: ${screenPoint.x}, ${screenPoint.y}")
-                val rect2 = Rect(screenPoint.x - 50, screenPoint.y - 50, screenPoint.x + 50, screenPoint.y + 50)
-                canvas.drawCircle((screenPoint.x).toFloat(), (screenPoint.y).toFloat(), 50f, clearPaint)
+                mapView.projection.toPixels(geoPoint, screenPoint)
+                canvas.drawCircle(screenPoint.x.toFloat(), screenPoint.y.toFloat(), scaledRadius, clearPaint)
             }
             canvas.restoreToCount(layer)
         }
     }
+
 }

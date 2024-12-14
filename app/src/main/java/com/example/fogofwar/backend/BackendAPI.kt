@@ -6,7 +6,6 @@ import com.example.fogofwar.backend.remotes.get_points.GetPointsReceiveRemote
 import com.example.fogofwar.backend.remotes.get_points.GetPointsResponseRemote
 import com.example.fogofwar.backend.remotes.register.RegisterReceiveRemote
 import com.example.fogofwar.backend.remotes.register.RegisterResponseRemote
-import com.example.fogofwar.backend.remotes.update_points.UpdatePointsResponseRemote
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -22,7 +21,7 @@ interface BackendAPI {
     @POST("/points/update")
     suspend fun updatePoints(
         @Body newUserPoints: UpdatePointsReceiveRemote
-    ): Response<UpdatePointsResponseRemote>
+    ): Response<Unit>
 
     @POST("/points/get")
     suspend fun getPoints(
