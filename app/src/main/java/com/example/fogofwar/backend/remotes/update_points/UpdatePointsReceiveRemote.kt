@@ -1,6 +1,6 @@
 package com.example.features.updatePoints
 
-import com.example.fogofwar.Point
+import com.example.fogofwar.additions.Point
 
 
 data class UpdatePointsReceiveRemote(

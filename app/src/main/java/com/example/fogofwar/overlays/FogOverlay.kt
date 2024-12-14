@@ -1,4 +1,4 @@
-package com.example.fogofwar
+package com.example.fogofwar.overlays
 
 import android.graphics.Canvas
 import android.graphics.Color
@@ -12,7 +12,7 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Overlay
 
-class UpperOverlay(): Overlay() {
+class FogOverlay(): Overlay() {
     private val clearedTiles: MutableList<GeoPoint> = mutableListOf()
 
     fun addClearedTile(geoPoint: GeoPoint) {

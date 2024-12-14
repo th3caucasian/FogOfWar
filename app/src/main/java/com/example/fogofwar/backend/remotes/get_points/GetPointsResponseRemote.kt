@@ -1,7 +1,6 @@
 package com.example.fogofwar.backend.remotes.get_points
 
-import com.example.fogofwar.Point
-import com.google.gson.annotations.SerializedName
+import com.example.fogofwar.additions.Point
 
 data class GetPointsResponseRemote(
     val points: List<Point>?

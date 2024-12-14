@@ -1,4 +1,4 @@
-package com.example.fogofwar
+package com.example.fogofwar.additions
 
 import com.google.gson.annotations.SerializedName
 
