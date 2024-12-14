@@ -7,6 +7,7 @@ import android.graphics.Point
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
+import android.util.Log
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Overlay
@@ -39,6 +40,7 @@ class UpperOverlay(): Overlay() {
             for (point in clearedTiles) {
                 val screenPoint = Point()
                 mapView.projection.toPixels(point, screenPoint)
+                Log.e("POINTS", "GeoPoint: ${point.longitude}, ${point.altitude}, ScreenPoint: ${screenPoint.x}, ${screenPoint.y}")
                 val rect2 = Rect(screenPoint.x - 50, screenPoint.y - 50, screenPoint.x + 50, screenPoint.y + 50)
                 canvas.drawCircle((screenPoint.x).toFloat(), (screenPoint.y).toFloat(), 50f, clearPaint)
             }

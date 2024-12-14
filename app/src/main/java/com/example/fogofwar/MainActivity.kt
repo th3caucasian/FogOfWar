@@ -1,15 +1,10 @@
 package com.example.fogofwar
 
 import android.Manifest
-import android.content.Context
 import android.content.pm.PackageManager
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.Rect
 import android.location.Location
@@ -18,8 +13,13 @@ import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import com.example.features.updatePoints.UpdatePointsReceiveRemote
+import com.example.fogofwar.backend.BackendAPI
+import com.example.fogofwar.backend.remotes.get_points.GetPointsReceiveRemote
+import com.example.fogofwar.backend.remotes.register.RegisterReceiveRemote
 import com.example.fogofwar.databinding.ActivityMainBinding
 import com.google.android.gms.location.*
+import kotlinx.coroutines.Dispatchers
 import org.osmdroid.api.IMapController
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapListener
@@ -31,6 +31,10 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity(), MapListener /* SensorEventListener*/ {
     private lateinit var mMap: MapView
@@ -99,6 +103,19 @@ class MainActivity : AppCompatActivity(), MapListener /* SensorEventListener*/ {
         mMap.overlays.add(mUpperOverlay)
         mMap.overlays.add(mMyLocationOverlay)
         startLocationUpdates() //mMap.addMapListener(this)
+
+        //-----------------------------------------------  Разобрать
+        val retrofit = Retrofit.Builder()
+            .baseUrl("http://192.168.69.194:8081/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        val backendAPI = retrofit.create(BackendAPI::class.java)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            val getter = backendAPI.getPoints(GetPointsReceiveRemote("123")).body()?.points!![0].x
+            Log.e("GET", "$getter")
+        }
+        //-----------------------------------------------
 
     }
 
@@ -184,14 +201,14 @@ class MainActivity : AppCompatActivity(), MapListener /* SensorEventListener*/ {
     override fun onPause() {
         super.onPause()
         compassOrientationProvider.stopOrientationProvider()
-        TODO("Разобраться с сенсорами")
+        //TODO("Разобраться с сенсорами")
         //sensorManager.unregisterListener(this)
     }
 
     override fun onResume() {
         super.onResume()
         compassOrientationProvider.startOrientationProvider{azimuth, _ -> updateIconRotation(azimuth)}
-        TODO("Разобраться с сенсорами")
+        //TODO("Разобраться с сенсорами")
         //sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_UI)
         //sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD), SensorManager.SENSOR_DELAY_UI)
     }
