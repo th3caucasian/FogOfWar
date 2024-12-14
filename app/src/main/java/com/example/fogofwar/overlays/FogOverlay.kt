@@ -36,6 +36,7 @@ class FogOverlay(): Overlay() {
 
             val zoomLevel = mapView.zoomLevelDouble
             val scaledRadius = ((baseRadius * zoomLevel) / (18 * baseRadius)).toFloat()
+            val sc = mapView.projection.metersToEquatorPixels(3.0f)
             Log.d("ZOOM", "$zoomLevel")
 
             val clearPaint = Paint()
@@ -48,7 +49,7 @@ class FogOverlay(): Overlay() {
             for (geoPoint in clearedTiles) {
                 val screenPoint = Point()
                 mapView.projection.toPixels(geoPoint, screenPoint)
-                canvas.drawCircle(screenPoint.x.toFloat(), screenPoint.y.toFloat(), scaledRadius, clearPaint)
+                canvas.drawCircle(screenPoint.x.toFloat(), screenPoint.y.toFloat(), sc, clearPaint)
             }
             canvas.restoreToCount(layer)
         }
