@@ -2,6 +2,9 @@ package com.example.fogofwar.backend
 
 
 import com.example.features.updatePoints.UpdatePointsReceiveRemote
+import com.example.fogofwar.backend.remotes.add_marker.AddMarkerReceiveRemote
+import com.example.fogofwar.backend.remotes.get_markers.GetMarkersReceiveRemote
+import com.example.fogofwar.backend.remotes.get_markers.GetMarkersResponseRemote
 import com.example.fogofwar.backend.remotes.get_points.GetPointsReceiveRemote
 import com.example.fogofwar.backend.remotes.get_points.GetPointsResponseRemote
 import com.example.fogofwar.backend.remotes.register.RegisterReceiveRemote
@@ -27,4 +30,14 @@ interface BackendAPI {
     suspend fun getPoints(
         @Body userPoints: GetPointsReceiveRemote
     ): Response<GetPointsResponseRemote>
+
+    @POST("/markers/get")
+    suspend fun getMarkers(
+        @Body userMarkers: GetMarkersReceiveRemote
+    ): Response<GetMarkersResponseRemote>
+
+    @POST("/markers/add")
+    suspend fun addMarkers(
+        @Body userMarkers: AddMarkerReceiveRemote
+    ): Response<Unit>
 }

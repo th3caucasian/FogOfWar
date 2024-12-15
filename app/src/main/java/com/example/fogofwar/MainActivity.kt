@@ -12,9 +12,12 @@ import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import com.example.database.columns.marker.MarkerDTO
 import com.example.features.updatePoints.UpdatePointsReceiveRemote
 import com.example.fogofwar.additions.Point
 import com.example.fogofwar.backend.BackendAPI
+import com.example.fogofwar.backend.remotes.add_marker.AddMarkerReceiveRemote
+import com.example.fogofwar.backend.remotes.get_markers.GetMarkersReceiveRemote
 import com.example.fogofwar.backend.remotes.get_points.GetPointsReceiveRemote
 import com.example.fogofwar.databinding.ActivityMainBinding
 import com.example.fogofwar.overlays.FogOverlay
@@ -35,20 +38,27 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import org.osmdroid.events.MapEventsReceiver
+import org.osmdroid.views.overlay.MapEventsOverlay
+import org.osmdroid.views.overlay.Marker
 
 class MainActivity : AppCompatActivity(), MapListener {
-    private lateinit var map: MapView
-    private lateinit var controller: IMapController
     private lateinit var myLocationOverlay: MyLocationNewOverlay
     private lateinit var fogOverlay: FogOverlay
+    private lateinit var mapEventsOverlay: MapEventsOverlay
+
+    private lateinit var mapView: MapView
+    private lateinit var mapController: IMapController
     private lateinit var currentIcon: Bitmap
     private lateinit var scaledIcon: Bitmap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var locationRequest: LocationRequest
     private lateinit var compassOrientationProvider: InternalCompassOrientationProvider
     private lateinit var backendAPI: BackendAPI
-    private var userPoints = mutableListOf<Point>()
-    private var userClearedPoints = mutableListOf<Point>()
+
+    private var userPointsFromDB = mutableListOf<Point>()
+    private var userMarkersFromDB = mutableListOf<MarkerDTO>()
+    private var newlyClearedPoints = mutableListOf<Point>()
     private var userPhoneNumber = "89880888306"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -64,20 +74,37 @@ class MainActivity : AppCompatActivity(), MapListener {
         setupLocation()
         setupRetrofit()
         fogOverlay = FogOverlay()
-        map.overlays.add(fogOverlay)
-        map.overlays.add(myLocationOverlay)
-
-        loadUserClearedPoints()
+        mapView.overlays.add(fogOverlay)
+        mapView.overlays.add(myLocationOverlay)
+        mapView.overlays.add(mapEventsOverlay)
+        loadUserData()
     }
 
 
     private fun setupMap(activityBinding: ActivityMainBinding) {
-        map = activityBinding.osmmap
-        map.setTileSource(TileSourceFactory.MAPNIK)
-        map.setMultiTouchControls(true)
-        map.getLocalVisibleRect(Rect())
-        controller = map.controller
-        controller.setZoom(18.0)
+        mapView = activityBinding.osmmap
+        mapView.setTileSource(TileSourceFactory.MAPNIK)
+        mapView.setMultiTouchControls(true)
+        mapView.getLocalVisibleRect(Rect())
+
+        mapController = mapView.controller
+        mapController.setZoom(18.0)
+
+        mapEventsOverlay = MapEventsOverlay(object : MapEventsReceiver {
+            override fun singleTapConfirmedHelper(p: GeoPoint?): Boolean {
+                p?.let {
+                    addMarker(it, "ЭТОТ МАРКЕР ПОСТАВЛЕН ЗДЕСЬ ${p.latitude}, ${p.longitude}")
+                }
+                return true
+            }
+
+            override fun longPressHelper(p: GeoPoint?): Boolean {
+                p?.let {
+                    deleteMarker(mapView, it)
+                }
+                return true
+            }
+        })
 
         currentIcon = BitmapFactory.decodeResource(resources, R.drawable.location_arrow_2)         // Если использовать эту переменную - иконка не отображается (видимо дело в размере)
         scaledIcon = Bitmap.createScaledBitmap(currentIcon, 100, 100, true)  // Если использовать эту - то всё отлично работает
@@ -87,7 +114,7 @@ class MainActivity : AppCompatActivity(), MapListener {
 
 
     private fun setupLocation() {
-        myLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(this), map)
+        myLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(this), mapView)
         myLocationOverlay.enableMyLocation()
         myLocationOverlay.isDrawAccuracyEnabled = false
         myLocationOverlay.setPersonAnchor(0.5F, 0.5F)
@@ -151,14 +178,14 @@ class MainActivity : AppCompatActivity(), MapListener {
         val geoPoint = GeoPoint(location.latitude, location.longitude)
         val point = Point(location.latitude, location.longitude)
 
-        if (!userPoints.contains(point))
-            userClearedPoints += point
-        if (userClearedPoints.size == 1) {
+        if (!userPointsFromDB.contains(point))
+            newlyClearedPoints += point
+        if (newlyClearedPoints.size == 1) {
             try {
                 CoroutineScope(Dispatchers.IO).launch {
-                    val updatePointsReceiveRemote = UpdatePointsReceiveRemote(userPhoneNumber, userClearedPoints)
+                    val updatePointsReceiveRemote = UpdatePointsReceiveRemote(userPhoneNumber, newlyClearedPoints)
                     val result = backendAPI.updatePoints(updatePointsReceiveRemote)
-                    //userClearedPoints.clear()
+                    newlyClearedPoints.clear()
                 }
             }
             catch (e: Exception) {
@@ -171,27 +198,27 @@ class MainActivity : AppCompatActivity(), MapListener {
 
 
 
-    private fun loadUserClearedPoints() {
+    private fun loadUserData() {
         val getPointsReceiveRemote = GetPointsReceiveRemote(userPhoneNumber)
+        val getMarkersReceiveRemote = GetMarkersReceiveRemote(userPhoneNumber)
         CoroutineScope(Dispatchers.IO).launch {
-            val response = backendAPI.getPoints(getPointsReceiveRemote).body()
-            if (response != null) {
-                userPoints = response.points!!.toMutableList()
-                for (point in userPoints)
-                {
+            val pointsResponse = backendAPI.getPoints(getPointsReceiveRemote).body()
+            if (pointsResponse != null) {
+                userPointsFromDB = pointsResponse.points!!.toMutableList()
+                for (point in userPointsFromDB) {
                     val pointAsGeo = GeoPoint(point.latitude, point.longitude)
                     fogOverlay.addClearedTile(pointAsGeo)
                 }
             }
-        }
-    }
 
-
-    // КНОПКА. Функция - логика нажатия кнопки возвращения к своей локации
-    fun toMyLocationButton(view: View?) {
-        runOnUiThread {
-            controller.animateTo(myLocationOverlay.myLocation)
-            controller.setZoom(10.0)
+            val markersResponse = backendAPI.getMarkers(getMarkersReceiveRemote).body()
+            if (markersResponse != null) {
+                userMarkersFromDB = markersResponse.markers.toMutableList()
+                for (marker in userMarkersFromDB) {
+                    val pointAsGeo = GeoPoint(marker.location.latitude, marker.location.longitude)
+                    addMarker(pointAsGeo, marker.description)
+                }
+            }
         }
     }
 
@@ -204,9 +231,51 @@ class MainActivity : AppCompatActivity(), MapListener {
         val rotatedBitmap = Bitmap.createBitmap(scaledIcon,0,0,scaledIcon.width, scaledIcon.height, rotMatrix,true)
         myLocationOverlay.setPersonIcon(rotatedBitmap)
         myLocationOverlay.setPersonAnchor(0.5F, 0.5F)
-        map.invalidate()
+        mapView.invalidate()
     }
 
+
+    private fun addMarker(geoPoint: GeoPoint, description: String?) {
+        val marker = Marker(mapView).apply {
+            position = geoPoint
+            title = description
+            setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+        }
+        try {
+            CoroutineScope(Dispatchers.IO).launch {
+                val geoAsPoint = Point(geoPoint.latitude, geoPoint.longitude)
+                val addMarkerReceiveRemote = AddMarkerReceiveRemote(userPhoneNumber, geoAsPoint, marker.title)
+                backendAPI.addMarkers(addMarkerReceiveRemote)
+            }
+        }
+        catch (e: Exception) {
+            e.printStackTrace()
+        }
+        mapView.overlays.add(marker)
+        mapView.invalidate()
+    }
+
+
+    private fun deleteMarker(mapView: MapView, geoPoint: GeoPoint) {
+
+    }
+
+
+    // КНОПКА. Функция - логика нажатия кнопки возвращения к своей локации
+    fun toMyLocationButton(view: View?) {
+        runOnUiThread {
+            mapController.animateTo(myLocationOverlay.myLocation)
+            mapController.setZoom(10.0)
+        }
+    }
+
+
+    fun toTaganrogButton(view: View?) {
+        runOnUiThread {
+            mapController.animateTo(GeoPoint(userPointsFromDB[0].latitude, userPointsFromDB[1].longitude))
+            mapController.setZoom(18.0)
+        }
+    }
 
 
 
@@ -225,7 +294,7 @@ class MainActivity : AppCompatActivity(), MapListener {
     }
 
     override fun onZoom(event:ZoomEvent?): Boolean {
-        map.invalidate()
+        mapView.invalidate()
         return false
     }
 
