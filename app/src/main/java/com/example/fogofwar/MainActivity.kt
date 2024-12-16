@@ -9,7 +9,9 @@ import android.graphics.Rect
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.database.columns.marker.MarkerDTO
@@ -17,6 +19,7 @@ import com.example.features.updatePoints.UpdatePointsReceiveRemote
 import com.example.fogofwar.additions.Point
 import com.example.fogofwar.backend.BackendAPI
 import com.example.fogofwar.backend.remotes.add_marker.AddMarkerReceiveRemote
+import com.example.fogofwar.backend.remotes.delete_marker.DeleteMarkerReceiveRemote
 import com.example.fogofwar.backend.remotes.get_markers.GetMarkersReceiveRemote
 import com.example.fogofwar.backend.remotes.get_points.GetPointsReceiveRemote
 import com.example.fogofwar.databinding.ActivityMainBinding
@@ -99,9 +102,6 @@ class MainActivity : AppCompatActivity(), MapListener {
             }
 
             override fun longPressHelper(p: GeoPoint?): Boolean {
-                p?.let {
-                    deleteMarker(mapView, it)
-                }
                 return true
             }
         })
@@ -110,7 +110,6 @@ class MainActivity : AppCompatActivity(), MapListener {
         scaledIcon = Bitmap.createScaledBitmap(currentIcon, 100, 100, true)  // Если использовать эту - то всё отлично работает
 
     }
-
 
 
     private fun setupLocation() {
@@ -241,23 +240,52 @@ class MainActivity : AppCompatActivity(), MapListener {
             title = description
             setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
         }
+
+        marker.setOnMarkerClickListener { _, _ ->
+            val alertDialogBuilder = AlertDialog.Builder(this)
+                .setTitle("Что сделать с маркером?")
+                .setPositiveButton("Добавить в группу (неактивно") { _, _ ->
+
+                }
+                .setNeutralButton("Отмена") {_, _ ->}
+                .setNegativeButton("Удалить") {_, _ ->
+                    deleteMarker(marker)
+                }
+            val alertDialog = alertDialogBuilder.create()
+            alertDialog.show()
+            true
+        }
+
+        if (userMarkersFromDB.any{it.description == description}) return
+
         try {
             CoroutineScope(Dispatchers.IO).launch {
                 val geoAsPoint = Point(geoPoint.latitude, geoPoint.longitude)
                 val addMarkerReceiveRemote = AddMarkerReceiveRemote(userPhoneNumber, geoAsPoint, marker.title)
-                backendAPI.addMarkers(addMarkerReceiveRemote)
+                val markerId = backendAPI.addMarkers(addMarkerReceiveRemote).body()!!.markerId
+                marker.relatedObject = markerId
             }
         }
         catch (e: Exception) {
             e.printStackTrace()
         }
+
         mapView.overlays.add(marker)
         mapView.invalidate()
     }
 
 
-    private fun deleteMarker(mapView: MapView, geoPoint: GeoPoint) {
-
+    private fun deleteMarker(marker: Marker) {
+        try {
+            CoroutineScope(Dispatchers.IO).launch {
+                val markerId = marker.relatedObject as Long
+                backendAPI.deleteMarkers(DeleteMarkerReceiveRemote(userPhoneNumber, markerId))
+                mapView.overlays.remove(marker)
+            }
+        }
+        catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
 

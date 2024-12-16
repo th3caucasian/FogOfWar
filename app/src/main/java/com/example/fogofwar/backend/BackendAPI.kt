@@ -3,6 +3,8 @@ package com.example.fogofwar.backend
 
 import com.example.features.updatePoints.UpdatePointsReceiveRemote
 import com.example.fogofwar.backend.remotes.add_marker.AddMarkerReceiveRemote
+import com.example.fogofwar.backend.remotes.add_marker.AddMarkerResponseRemote
+import com.example.fogofwar.backend.remotes.delete_marker.DeleteMarkerReceiveRemote
 import com.example.fogofwar.backend.remotes.get_markers.GetMarkersReceiveRemote
 import com.example.fogofwar.backend.remotes.get_markers.GetMarkersResponseRemote
 import com.example.fogofwar.backend.remotes.get_points.GetPointsReceiveRemote
@@ -11,9 +13,7 @@ import com.example.fogofwar.backend.remotes.register.RegisterReceiveRemote
 import com.example.fogofwar.backend.remotes.register.RegisterResponseRemote
 import retrofit2.Response
 import retrofit2.http.Body
-import retrofit2.http.GET
 import retrofit2.http.POST
-import retrofit2.http.Query
 
 interface BackendAPI {
     @POST("/register")
@@ -39,5 +39,10 @@ interface BackendAPI {
     @POST("/markers/add")
     suspend fun addMarkers(
         @Body userMarkers: AddMarkerReceiveRemote
+    ): Response<AddMarkerResponseRemote>
+
+    @POST("/markers/delete")
+    suspend fun deleteMarkers(
+        @Body userMarkers: DeleteMarkerReceiveRemote
     ): Response<Unit>
 }

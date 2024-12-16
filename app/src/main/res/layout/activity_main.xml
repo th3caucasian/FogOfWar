@@ -9,17 +9,18 @@
 
     <org.osmdroid.views.MapView
         android:id="@+id/osmmap"
-        android:layout_width="409dp"
-        android:layout_height="730dp"
+        android:layout_width="375dp"
+        android:layout_height="503dp"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.444"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0">
+        app:layout_constraintVertical_bias="0.122">
 
     </org.osmdroid.views.MapView>
 
@@ -31,10 +32,10 @@
         android:text="To Taganrog"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.203"
+        app:layout_constraintHorizontal_bias="0.816"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.926" />
+        app:layout_constraintVertical_bias="0.827" />
 
     <Button
         android:id="@+id/button3"
