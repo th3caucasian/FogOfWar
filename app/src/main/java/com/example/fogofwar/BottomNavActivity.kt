@@ -1,20 +1,59 @@
 package com.example.fogofwar
 
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.fragment.app.Fragment
+import androidx.viewpager2.widget.ViewPager2
+import com.example.fogofwar.databinding.ActivityBottomNavBinding
+import com.example.fogofwar.ui.fragment.AdapterViewPager
+import com.example.fogofwar.ui.fragment.FragmentMaps
+import com.example.fogofwar.ui.fragment.FragmentProfile
+import com.example.fogofwar.ui.fragment.FragmentSearch
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.android.material.navigation.NavigationBarView.OnItemSelectedListener
 
 class BottomNavActivity : AppCompatActivity() {
+    lateinit var viewPager: ViewPager2
+    lateinit var bottomNavView: BottomNavigationView
+    var fragmentsArrayList = ArrayList<Fragment>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContentView(R.layout.activity_bottom_nav)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
+        val binding = ActivityBottomNavBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        bottomNavView = binding.bottomNavView
+        viewPager = binding.viewPager
+        fragmentsArrayList += FragmentMaps()
+        fragmentsArrayList += FragmentSearch()
+        fragmentsArrayList += FragmentProfile()
+
+        val adapterViewPager = AdapterViewPager(this, fragmentsArrayList)
+        viewPager.adapter = adapterViewPager
+        viewPager.registerOnPageChangeCallback(object: ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                when (position) {
+                    0 -> bottomNavView.selectedItemId = R.id.navigationMaps
+                    1 -> bottomNavView.selectedItemId = R.id.navigationSearch
+                    2 -> bottomNavView.selectedItemId = R.id.navigationProfile
+                }
+                super.onPageSelected(position)
+            }
+        })
+
+        bottomNavView.setOnItemSelectedListener(object: OnItemSelectedListener{
+            override fun onNavigationItemSelected(item: MenuItem): Boolean {
+                when (item.itemId) {
+                    R.id.navigationMaps -> viewPager.currentItem = 0
+                    R.id.navigationSearch -> viewPager.currentItem = 1
+                    R.id.navigationProfile -> viewPager.currentItem = 2
+
+                }
+                return true
+            }
+        })
+
+
     }
 }
