@@ -112,6 +112,7 @@ class MainActivity : AppCompatActivity(), MapListener {
     }
 
 
+
     private fun setupLocation() {
         myLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(this), mapView)
         myLocationOverlay.enableMyLocation()
@@ -304,7 +305,6 @@ class MainActivity : AppCompatActivity(), MapListener {
             mapController.setZoom(18.0)
         }
     }
-
 
 
     override fun onPause() {
