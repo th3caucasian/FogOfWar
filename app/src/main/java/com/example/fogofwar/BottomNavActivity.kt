@@ -1,6 +1,7 @@
 package com.example.fogofwar
 
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -25,6 +26,8 @@ class BottomNavActivity : AppCompatActivity() {
 
         bottomNavView = binding.bottomNavView
         viewPager = binding.viewPager
+        viewPager.offscreenPageLimit = 3
+
         fragmentsArrayList += FragmentMaps()
         fragmentsArrayList += FragmentSearch()
         fragmentsArrayList += FragmentProfile()
@@ -53,7 +56,5 @@ class BottomNavActivity : AppCompatActivity() {
                 return true
             }
         })
-
-
     }
 }

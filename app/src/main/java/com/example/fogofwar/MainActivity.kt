@@ -306,6 +306,15 @@ class MainActivity : AppCompatActivity(), MapListener {
         }
     }
 
+    override fun onScroll(event: ScrollEvent?): Boolean {
+        return true
+    }
+
+    override fun onZoom(event:ZoomEvent?): Boolean {
+        mapView.invalidate()
+        return false
+    }
+
 
     override fun onPause() {
         super.onPause()
@@ -317,13 +326,10 @@ class MainActivity : AppCompatActivity(), MapListener {
         // compassOrientationProvider.startOrientationProvider{azimuth, _ -> updateIconRotation(azimuth)} // - в onPause() убрал stopOrientation...
     }
 
-    override fun onScroll(event: ScrollEvent?): Boolean {
-        return true
+    override fun onDestroy() {
+        super.onDestroy()
+
     }
 
-    override fun onZoom(event:ZoomEvent?): Boolean {
-        mapView.invalidate()
-        return false
-    }
 
 }
