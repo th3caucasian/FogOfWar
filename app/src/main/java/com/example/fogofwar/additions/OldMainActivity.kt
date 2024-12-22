@@ -1,4 +1,4 @@
-package com.example.fogofwar
+package com.example.fogofwar.additions
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -9,14 +9,13 @@ import android.graphics.Rect
 import android.location.Location
 import android.os.Bundle
 import android.util.Log
-import android.view.MotionEvent
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.database.columns.marker.MarkerDTO
 import com.example.features.updatePoints.UpdatePointsReceiveRemote
-import com.example.fogofwar.additions.Point
+import com.example.fogofwar.R
 import com.example.fogofwar.backend.BackendAPI
 import com.example.fogofwar.backend.remotes.add_marker.AddMarkerReceiveRemote
 import com.example.fogofwar.backend.remotes.delete_marker.DeleteMarkerReceiveRemote
@@ -45,7 +44,7 @@ import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
 
-class MainActivity : AppCompatActivity(), MapListener {
+class OldMainActivity : AppCompatActivity(), MapListener {
     private lateinit var myLocationOverlay: MyLocationNewOverlay
     private lateinit var fogOverlay: FogOverlay
     private lateinit var mapEventsOverlay: MapEventsOverlay

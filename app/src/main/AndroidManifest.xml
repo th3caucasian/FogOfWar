@@ -31,7 +31,7 @@
         </intent-filter>
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".additions.OldMainActivity"
             android:exported="true">
 
         </activity>
