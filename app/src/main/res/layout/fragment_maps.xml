@@ -4,8 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@color/white"
-    tools:context=".ui.fragment.FragmentMaps">
+    tools:context=".ui.maps.FragmentMaps">
+
 
     <org.osmdroid.views.MapView
         android:id="@+id/osmmap"
@@ -76,5 +76,19 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/osmmap"
         app:layout_constraintVertical_bias="0.217" />
+
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="TODO"
+        android:src="@drawable/app_background"
+        android:scaleType="centerCrop"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:clickable="false"
+        android:focusable="false"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

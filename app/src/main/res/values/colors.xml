@@ -7,5 +7,8 @@
     <color name="purple2">#673AB7</color>
     <color name="teal1">#03A9F4</color>
     <color name="teal2">#009688</color>
-
+    <color name="grey">#485050</color>
+    <color name="green">#088006</color>
+    <color name="beige">#EFCEAD</color>
+    <color name="half_transp">#80000000</color>
 </resources>

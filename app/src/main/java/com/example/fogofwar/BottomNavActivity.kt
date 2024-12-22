@@ -1,16 +1,15 @@
 package com.example.fogofwar
 
 import android.os.Bundle
-import android.util.Log
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.widget.ViewPager2
 import com.example.fogofwar.databinding.ActivityBottomNavBinding
-import com.example.fogofwar.ui.fragment.AdapterViewPager
-import com.example.fogofwar.ui.fragment.FragmentMaps
-import com.example.fogofwar.ui.fragment.FragmentProfile
-import com.example.fogofwar.ui.fragment.FragmentSearch
+import com.example.fogofwar.ui.AdapterViewPager
+import com.example.fogofwar.ui.maps.FragmentMaps
+import com.example.fogofwar.ui.profile.FragmentProfile
+import com.example.fogofwar.ui.search.FragmentSearch
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.navigation.NavigationBarView.OnItemSelectedListener
 
@@ -45,16 +44,14 @@ class BottomNavActivity : AppCompatActivity() {
             }
         })
 
-        bottomNavView.setOnItemSelectedListener(object: OnItemSelectedListener{
-            override fun onNavigationItemSelected(item: MenuItem): Boolean {
-                when (item.itemId) {
-                    R.id.navigationMaps -> viewPager.currentItem = 0
-                    R.id.navigationSearch -> viewPager.currentItem = 1
-                    R.id.navigationProfile -> viewPager.currentItem = 2
+        bottomNavView.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.navigationMaps -> viewPager.currentItem = 0
+                R.id.navigationSearch -> viewPager.currentItem = 1
+                R.id.navigationProfile -> viewPager.currentItem = 2
 
-                }
-                return true
             }
-        })
+            true
+        }
     }
 }

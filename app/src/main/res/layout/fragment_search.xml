@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/white"
-    tools:context=".ui.fragment.FragmentSearch">
+    tools:context=".ui.search.FragmentSearch">
 
 
     <androidx.appcompat.widget.SearchView
@@ -14,18 +14,24 @@
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
         android:layout_marginTop="16dp"
+        android:background="@drawable/search_view_background"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:queryHint="Search for friends!" />
+        app:queryHint="Search for friends!"
+        app:iconifiedByDefault="false"
+        />
 
     <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="700dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/searchView"
-        app:layout_constraintVertical_bias="0.174" />
+        app:layout_constraintVertical_bias="0.357" />
+
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
