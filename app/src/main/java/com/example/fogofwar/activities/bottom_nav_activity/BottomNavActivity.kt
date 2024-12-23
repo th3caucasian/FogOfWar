@@ -1,17 +1,16 @@
-package com.example.fogofwar
+package com.example.fogofwar.activities.bottom_nav_activity
 
 import android.os.Bundle
-import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.viewpager2.widget.ViewPager2
+import com.example.fogofwar.R
 import com.example.fogofwar.databinding.ActivityBottomNavBinding
 import com.example.fogofwar.ui.AdapterViewPager
 import com.example.fogofwar.ui.maps.FragmentMaps
 import com.example.fogofwar.ui.profile.FragmentProfile
 import com.example.fogofwar.ui.search.FragmentSearch
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.navigation.NavigationBarView.OnItemSelectedListener
 
 class BottomNavActivity : AppCompatActivity() {
     lateinit var viewPager: ViewPager2
@@ -49,7 +48,6 @@ class BottomNavActivity : AppCompatActivity() {
                 R.id.navigationMaps -> viewPager.currentItem = 0
                 R.id.navigationSearch -> viewPager.currentItem = 1
                 R.id.navigationProfile -> viewPager.currentItem = 2
-
             }
             true
         }

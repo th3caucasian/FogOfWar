@@ -21,20 +21,24 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
-            android:name=".BottomNavActivity"
-            android:windowSoftInputMode="adjustPan"
-            android:exported="true" >
-        <intent-filter>
-            <action android:name="android.intent.action.MAIN" />
+            android:name=".activities.marker_groups_activity.MarkerGroupsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.friends_activity.FriendsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.bottom_nav_activity.BottomNavActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustPan">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
-            <category android:name="android.intent.category.LAUNCHER" />
-        </intent-filter>
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
         <activity
             android:name=".additions.OldMainActivity"
-            android:exported="true">
-
-        </activity>
+            android:exported="true" />
     </application>
 
 </manifest>

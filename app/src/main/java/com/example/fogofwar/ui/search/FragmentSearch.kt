@@ -41,11 +41,7 @@ class FragmentSearch : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentSearchBinding.inflate(inflater, container, false)
         val root = binding.root
-        val retrofit = Retrofit.Builder()
-            .baseUrl("http://192.168.69.194:8081/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-        backendAPI = retrofit.create(BackendAPI::class.java)
+
 
         searchView = binding.searchView
         searchView.clearFocus()

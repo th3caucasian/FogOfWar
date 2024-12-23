@@ -1,0 +1,50 @@
+package com.example.fogofwar.activities.friends_activity
+
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.fogofwar.backend.BackendAPI
+import com.example.fogofwar.backend.remotes.get_friends.GetFriendsReceiveRemote
+import com.example.fogofwar.databinding.ActivityFriendsBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+
+class FriendsActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityFriendsBinding
+    private lateinit var adapter: RecycleViewAdapterFriends
+    private lateinit var layoutManager: LinearLayoutManager
+    private lateinit var recyclerView: RecyclerView
+
+    private lateinit var backendAPI: BackendAPI
+    private lateinit var userFriends: List<String>
+
+    private var userPhoneNumber = "89880888306"
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityFriendsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        val retrofit = Retrofit.Builder()
+            .baseUrl("http://192.168.69.194:8081/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        backendAPI = retrofit.create(BackendAPI::class.java)
+        CoroutineScope(Dispatchers.IO).launch {
+            userFriends = backendAPI.getFriends(GetFriendsReceiveRemote(userPhoneNumber)).body()!!.friendsNumbers
+            withContext(Dispatchers.Main) {
+                adapter = RecycleViewAdapterFriends(userFriends)
+                layoutManager = LinearLayoutManager(this@FriendsActivity)
+                recyclerView = binding.recyclerView
+                recyclerView.setHasFixedSize(true)
+                recyclerView.layoutManager = layoutManager
+                recyclerView.adapter = adapter
+            }
+        }
+    }
+}

@@ -112,7 +112,6 @@ class FragmentMaps : Fragment(), MapListener {
         val tileRequestCompleteHandler = SimpleInvalidationHandler(mapView)
         tileProvider.setTileRequestCompleteHandler(tileRequestCompleteHandler)
         mapView.tileProvider = tileProvider
-        //mapView.setTileSource(TileSourceFactory.MAPNIK)
         mapView.setMultiTouchControls(true)
         mapView.getLocalVisibleRect(Rect())
         mapView.setOnTouchListener {v, event ->
@@ -151,7 +150,7 @@ class FragmentMaps : Fragment(), MapListener {
         mapEventsOverlay = MapEventsOverlay(object : MapEventsReceiver {
             override fun singleTapConfirmedHelper(p: GeoPoint?): Boolean {
                 p?.let {
-                    addMarker(it, "ЭТОТ МАРКЕР ПОСТАВЛЕН ЗДЕСЬ ${p.latitude}, ${p.longitude}")
+                    addMarker(it, "ЭТОТ МАРКЕР ПОСТАВЛЕН ЗДЕСЬ ${p.latitude}, ${p.longitude}", null)
                 }
                 return true
             }
@@ -329,7 +328,7 @@ class FragmentMaps : Fragment(), MapListener {
                 userMarkersFromDB = markersResponse.markers.toMutableList()
                 for (marker in userMarkersFromDB) {
                     val pointAsGeo = GeoPoint(marker.location.latitude, marker.location.longitude)
-                    addMarker(pointAsGeo, marker.description)
+                    addMarker(pointAsGeo, marker.description, marker.id)
                 }
             }
         }
@@ -350,11 +349,12 @@ class FragmentMaps : Fragment(), MapListener {
 
     }
 
-
-    private fun addMarker(geoPoint: GeoPoint, description: String?) {
+    // TODO: МАРКЕРЫ СТАВЯТСЯ В ДВОЙНОМ ЭКЗЕМПЛЯРЕ - ПОЧЕМУ???
+    private fun addMarker(geoPoint: GeoPoint, description: String?, markerId: Long?) {
         val marker = Marker(mapViewMarkers).apply {
             position = geoPoint
             title = description
+            relatedObject = markerId
             setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
         }
 
@@ -378,8 +378,8 @@ class FragmentMaps : Fragment(), MapListener {
                 CoroutineScope(Dispatchers.IO).launch {
                     val geoAsPoint = Point(geoPoint.latitude, geoPoint.longitude)
                     val addMarkerReceiveRemote = AddMarkerReceiveRemote(userPhoneNumber, geoAsPoint, marker.title)
-                    val markerId = backendAPI.addMarkers(addMarkerReceiveRemote).body()!!.markerId
-                    marker.relatedObject = markerId
+                    val _markerId = backendAPI.addMarkers(addMarkerReceiveRemote).body()!!.markerId
+                    marker.relatedObject = _markerId
                 }
             }
             catch (e: Exception) {
@@ -395,8 +395,8 @@ class FragmentMaps : Fragment(), MapListener {
         try {
             CoroutineScope(Dispatchers.IO).launch {
                 val markerId = marker.relatedObject as Long
-                backendAPI.deleteMarkers(DeleteMarkerReceiveRemote(userPhoneNumber, markerId))
                 mapViewMarkers.overlays.remove(marker)
+                backendAPI.deleteMarkers(DeleteMarkerReceiveRemote(userPhoneNumber, markerId))
             }
         }
         catch (e: Exception) {
