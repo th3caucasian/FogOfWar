@@ -5,7 +5,9 @@ import com.example.features.updatePoints.UpdatePointsReceiveRemote
 import com.example.fogofwar.backend.remotes.add_friend.AddFriendReceiveRemote
 import com.example.fogofwar.backend.remotes.add_marker.AddMarkerReceiveRemote
 import com.example.fogofwar.backend.remotes.add_marker.AddMarkerResponseRemote
+import com.example.fogofwar.backend.remotes.delete_friend.DeleteFriendReceiveRemote
 import com.example.fogofwar.backend.remotes.delete_marker.DeleteMarkerReceiveRemote
+import com.example.fogofwar.backend.remotes.delete_marker_group.DeleteMarkerGroupReceiveRemote
 import com.example.fogofwar.backend.remotes.get_friends.GetFriendsReceiveRemote
 import com.example.fogofwar.backend.remotes.get_friends.GetFriendsResponseRemote
 import com.example.fogofwar.backend.remotes.get_marker_groups.GetMarkerGroupsReceiveRemote
@@ -77,4 +79,15 @@ interface BackendAPI {
     suspend fun shareMarkerGroups(
         @Body user: ShareMarkerGroupReceiveRemote
     ): Response<Unit>
+
+    @POST("/marker-group/delete")
+    suspend fun deleteMarkerGroup(
+        @Body user: DeleteMarkerGroupReceiveRemote
+    ): Response<Unit>
+
+    @POST("/friends/delete")
+    suspend fun deleteFriend(
+        @Body user: DeleteFriendReceiveRemote
+    ): Response<Unit>
+
 }

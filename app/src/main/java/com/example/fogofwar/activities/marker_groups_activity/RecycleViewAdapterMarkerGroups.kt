@@ -10,6 +10,15 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fogofwar.R
 import com.example.fogofwar.activities.friends_activity.FriendsActivity
+import com.example.fogofwar.backend.BackendAPI
+import com.example.fogofwar.backend.remotes.delete_marker_group.DeleteMarkerGroupReceiveRemote
+import com.example.fogofwar.backend.remotes.get_marker_groups.GetMarkerGroupsReceiveRemote
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class RecycleViewAdapterMarkerGroups(private var mDataset: List<String>?, private var context: Context): RecyclerView.Adapter<RecycleViewAdapterMarkerGroups.MyViewHolder>() {
 
@@ -18,10 +27,24 @@ class RecycleViewAdapterMarkerGroups(private var mDataset: List<String>?, privat
     class MyViewHolder(v: View): RecyclerView.ViewHolder(v) {
         private val textView: TextView = v.findViewById(R.id.textView)
         private val buttonSend: ImageButton = v.findViewById(R.id.buttonSend)
-
+        private val buttonDelete: ImageButton = v.findViewById(R.id.buttonDelete)
+        val retrofit = Retrofit.Builder()
+            .baseUrl("http://192.168.69.194:8081/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        val backendAPI = retrofit.create(BackendAPI::class.java)
+        private var userPhoneNumber = "89880888306"
 
         fun bind(item: String?, _context: Context) {
             textView.text = item
+            buttonDelete.setOnClickListener {
+                CoroutineScope(Dispatchers.IO).launch {
+                    val markerGroups = backendAPI.getMarkerGroups(GetMarkerGroupsReceiveRemote(userPhoneNumber)).body()!!.markerGroups
+                    val markerGroupId = markerGroups.find { it.name == textView.text.toString() }!!.id!!
+                    backendAPI.deleteMarkerGroup(DeleteMarkerGroupReceiveRemote(userPhoneNumber, markerGroupId))
+                }
+            }
+
             buttonSend.setOnClickListener {
                 val intent = Intent(_context, FriendsActivity::class.java)
                 intent.putExtra("caller_activity", "MarkerGroupsActivity")

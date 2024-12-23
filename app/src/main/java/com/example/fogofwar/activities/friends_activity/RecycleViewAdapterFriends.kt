@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class RecycleViewAdapterFriends(private var mDataset: List<String>?, private var callerActivity: String?, private var markerName: String?, private val context: Context): RecyclerView.Adapter<RecycleViewAdapterFriends.MyViewHolder>() {
+class RecycleViewAdapterFriends(private var mDataset: List<String>?, private var callerActivity: String?, private var markerGroupName: String?, private val context: Context): RecyclerView.Adapter<RecycleViewAdapterFriends.MyViewHolder>() {
 
 
 
@@ -31,7 +31,7 @@ class RecycleViewAdapterFriends(private var mDataset: List<String>?, private var
 
 
 
-        fun bind(item: String?, _callerActivity: String?, markerName: String?, _context: Context) {
+        fun bind(item: String?, _callerActivity: String?, _markerGroupName: String?, _context: Context) {
             val retrofit = Retrofit.Builder()
                 .baseUrl("http://192.168.69.194:8081/")
                 .addConverterFactory(GsonConverterFactory.create())
@@ -46,7 +46,7 @@ class RecycleViewAdapterFriends(private var mDataset: List<String>?, private var
                 textView.setOnClickListener {
                     CoroutineScope(Dispatchers.IO).launch {
                         val markerGroups = backendAPI.getMarkerGroups(GetMarkerGroupsReceiveRemote(userPhoneNumber)).body()!!.markerGroups
-                        val markerGroupId = markerGroups.find { it.name == markerName }!!.id!!
+                        val markerGroupId = markerGroups.find { it.name == _markerGroupName }!!.id!!
                         backendAPI.shareMarkerGroups(ShareMarkerGroupReceiveRemote(markerGroupId, textView.text.toString()))
                         val alertDialogBuilder = AlertDialog.Builder(_context)
                             .setTitle("Группа маркеров была успешно передана пользователю")
@@ -69,7 +69,7 @@ class RecycleViewAdapterFriends(private var mDataset: List<String>?, private var
     }
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        holder.bind(mDataset!![position], callerActivity, markerName, context)
+        holder.bind(mDataset!![position], callerActivity, markerGroupName, context)
     }
 
     override fun getItemCount(): Int {
