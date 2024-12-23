@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -12,6 +13,9 @@ import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fogofwar.R
 import com.example.fogofwar.backend.BackendAPI
+import com.example.fogofwar.backend.remotes.delete_friend.DeleteFriendReceiveRemote
+import com.example.fogofwar.backend.remotes.delete_marker_group.DeleteMarkerGroupReceiveRemote
+import com.example.fogofwar.backend.remotes.get_friends.GetFriendsReceiveRemote
 import com.example.fogofwar.backend.remotes.get_marker_groups.GetMarkerGroupsReceiveRemote
 import com.example.fogofwar.backend.remotes.share_marker_group.ShareMarkerGroupReceiveRemote
 import kotlinx.coroutines.CoroutineScope
@@ -27,11 +31,16 @@ class RecycleViewAdapterFriends(private var mDataset: List<String>?, private var
     class MyViewHolder(v: View): RecyclerView.ViewHolder(v) {
         private val textView: TextView = v.findViewById(R.id.textView)
         private val buttonAdd: Button = v.findViewById(R.id.buttonAdd)
+        private val buttonDelete: ImageButton = v.findViewById(R.id.buttonDelete)
         private var userPhoneNumber = "89880888306"
 
 
-
-        fun bind(item: String?, _callerActivity: String?, _markerGroupName: String?, _context: Context) {
+        fun bind(
+            item: String?,
+            _callerActivity: String?,
+            _markerGroupName: String?,
+            _context: Context
+        ) {
             val retrofit = Retrofit.Builder()
                 .baseUrl("http://192.168.69.194:8081/")
                 .addConverterFactory(GsonConverterFactory.create())
@@ -45,9 +54,16 @@ class RecycleViewAdapterFriends(private var mDataset: List<String>?, private var
             if (_callerActivity == "MarkerGroupsActivity") {
                 textView.setOnClickListener {
                     CoroutineScope(Dispatchers.IO).launch {
-                        val markerGroups = backendAPI.getMarkerGroups(GetMarkerGroupsReceiveRemote(userPhoneNumber)).body()!!.markerGroups
+                        val markerGroups =
+                            backendAPI.getMarkerGroups(GetMarkerGroupsReceiveRemote(userPhoneNumber))
+                                .body()!!.markerGroups
                         val markerGroupId = markerGroups.find { it.name == _markerGroupName }!!.id!!
-                        backendAPI.shareMarkerGroups(ShareMarkerGroupReceiveRemote(markerGroupId, textView.text.toString()))
+                        backendAPI.shareMarkerGroups(
+                            ShareMarkerGroupReceiveRemote(
+                                markerGroupId,
+                                textView.text.toString()
+                            )
+                        )
                         val alertDialogBuilder = AlertDialog.Builder(_context)
                             .setTitle("Группа маркеров была успешно передана пользователю")
                             .setPositiveButton("Ок") { _, _ ->
@@ -57,8 +73,23 @@ class RecycleViewAdapterFriends(private var mDataset: List<String>?, private var
                     }
                     textView.isClickable = false
                 }
-            }
+            } else {
+                buttonDelete.setOnClickListener {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val friends =
+                            backendAPI.getFriends(GetFriendsReceiveRemote(userPhoneNumber))
+                                .body()!!.friendsNumbers
+                        val friendNumber = friends.find { it == textView.text.toString() }!!
+                        backendAPI.deleteFriend(
+                            DeleteFriendReceiveRemote(
+                                userPhoneNumber,
+                                friendNumber
+                            )
+                        )
+                    }
+                }
 
+            }
         }
     }
 
