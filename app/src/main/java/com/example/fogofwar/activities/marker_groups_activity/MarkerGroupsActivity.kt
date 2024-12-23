@@ -29,7 +29,8 @@ class MarkerGroupsActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
 
     private lateinit var backendAPI: BackendAPI
-    private lateinit var userFriends: List<String>
+    private lateinit var markerGroups: List<MarkerGroupDTO>
+    private lateinit var markerGroupsNames: List<String>
 
     private var userPhoneNumber = "89880888306"
 
@@ -45,9 +46,10 @@ class MarkerGroupsActivity : AppCompatActivity() {
             .build()
         backendAPI = retrofit.create(BackendAPI::class.java)
         CoroutineScope(Dispatchers.IO).launch {
-            userFriends = backendAPI.getMarkerGroups(GetMarkerGroupsReceiveRemote(userPhoneNumber)).body()!!.markerGroups.map { it.name }
+            markerGroups = backendAPI.getMarkerGroups(GetMarkerGroupsReceiveRemote(userPhoneNumber)).body()!!.markerGroups
+            markerGroupsNames = markerGroups.map { it.name }
             withContext(Dispatchers.Main) {
-                adapter = RecycleViewAdapterMarkerGroups(userFriends)
+                adapter = RecycleViewAdapterMarkerGroups(markerGroupsNames, this@MarkerGroupsActivity)
                 layoutManager = LinearLayoutManager(this@MarkerGroupsActivity)
                 recyclerView = binding.recyclerView
                 recyclerView.setHasFixedSize(true)

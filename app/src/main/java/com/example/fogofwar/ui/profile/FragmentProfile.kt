@@ -25,6 +25,7 @@ class FragmentProfile : Fragment() {
 
         buttonFriends.setOnClickListener {
             val intent = Intent(requireActivity(), FriendsActivity::class.java)
+            intent.putExtra("caller_activity", "ButtomNavActivity")
             startActivity(intent)
         }
 

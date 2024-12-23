@@ -17,6 +17,7 @@ import com.example.fogofwar.backend.remotes.get_points.GetPointsResponseRemote
 import com.example.fogofwar.backend.remotes.get_user.GetUserReceiveRemote
 import com.example.fogofwar.backend.remotes.register.RegisterReceiveRemote
 import com.example.fogofwar.backend.remotes.register.RegisterResponseRemote
+import com.example.fogofwar.backend.remotes.share_marker_group.ShareMarkerGroupReceiveRemote
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
@@ -67,8 +68,13 @@ interface BackendAPI {
         @Body user: GetFriendsReceiveRemote
     ): Response<GetFriendsResponseRemote>
 
-    @POST("/marker-groups/get")
+    @POST("/marker-group/get")
     suspend fun getMarkerGroups(
         @Body user: GetMarkerGroupsReceiveRemote
     ): Response<GetMarkerGroupsResponseRemote>
+
+    @POST("/marker-group/share")
+    suspend fun shareMarkerGroups(
+        @Body user: ShareMarkerGroupReceiveRemote
+    ): Response<Unit>
 }
