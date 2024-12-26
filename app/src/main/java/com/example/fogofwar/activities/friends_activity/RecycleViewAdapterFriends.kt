@@ -22,6 +22,7 @@ import com.example.fogofwar.backend.remotes.share_marker_group.ShareMarkerGroupR
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -29,7 +30,7 @@ class RecycleViewAdapterFriends(private var mDataset: MutableList<String>?, priv
 
 
 
-    class MyViewHolder(v: View): RecyclerView.ViewHolder(v) {
+    class MyViewHolder(private val recycleViewAdapter: RecycleViewAdapterFriends, v: View): RecyclerView.ViewHolder(v) {
         private val textView: TextView = v.findViewById(R.id.textView)
         private val buttonAdd: Button = v.findViewById(R.id.buttonAdd)
         private val buttonDelete: ImageButton = v.findViewById(R.id.buttonDelete)
@@ -65,7 +66,12 @@ class RecycleViewAdapterFriends(private var mDataset: MutableList<String>?, priv
                     CoroutineScope(Dispatchers.IO).launch {
                         val friends = backendAPI.getFriends(GetFriendsReceiveRemote(userPhoneNumber)).body()!!.friendsNumbers
                         val friendNumber = friends.find { it == textView.text.toString() }!!
-                        backendAPI.deleteFriend(DeleteFriendReceiveRemote(userPhoneNumber, friendNumber))
+                        val response = backendAPI.deleteFriend(DeleteFriendReceiveRemote(userPhoneNumber, friendNumber))
+                        withContext(Dispatchers.Main) {
+                            if (response.isSuccessful) {
+                                recycleViewAdapter.deleteFriend(item)
+                            }
+                        }
                     }
                 }
             }
@@ -74,7 +80,7 @@ class RecycleViewAdapterFriends(private var mDataset: MutableList<String>?, priv
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val v = LayoutInflater.from(parent.context).inflate(R.layout.recycler_view_item, parent, false)
-        val vh = MyViewHolder(v)
+        val vh = MyViewHolder(this, v)
         return vh
     }
 
@@ -86,6 +92,13 @@ class RecycleViewAdapterFriends(private var mDataset: MutableList<String>?, priv
     override fun getItemCount(): Int {
         return mDataset!!.size
     }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun deleteFriend(friendName: String?) {
+        mDataset!!.remove(friendName)
+        notifyDataSetChanged()
+    }
+
 
 
 }

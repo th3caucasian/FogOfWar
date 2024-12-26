@@ -3,14 +3,11 @@ package com.example.fogofwar.activities.marker_groups_activity
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.os.Bundle
-import android.text.BoringLayout
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fogofwar.R
 import com.example.fogofwar.activities.friends_activity.FriendsActivity
@@ -28,7 +25,7 @@ class RecycleViewAdapterMarkerGroups(private var mDataset: MutableList<String>?,
 
 
 
-    class MyViewHolder(v: View): RecyclerView.ViewHolder(v) {
+    class MyViewHolder(private val recycleViewAdapter: RecycleViewAdapterMarkerGroups, v: View): RecyclerView.ViewHolder(v) {
         private val textView: TextView = v.findViewById(R.id.textView)
         private val buttonSend: ImageButton = v.findViewById(R.id.buttonSend)
         private val buttonDelete: ImageButton = v.findViewById(R.id.buttonDelete)
@@ -42,30 +39,34 @@ class RecycleViewAdapterMarkerGroups(private var mDataset: MutableList<String>?,
 
 
         // TODO: Сделать пропажу списка при удалении сразу
-        fun bind(item: String?, _context: Context) {
+        fun bind(item: String?, activityContext: Context) {
 
             textView.text = item
             buttonDelete.setOnClickListener {
                 CoroutineScope(Dispatchers.IO).launch {
                     val markerGroups = backendAPI.getMarkerGroups(GetMarkerGroupsReceiveRemote(userPhoneNumber)).body()!!.markerGroups
                     val markerGroupId = markerGroups.find { it.name == textView.text.toString() }!!.id!!
-                    backendAPI.deleteMarkerGroup(DeleteMarkerGroupReceiveRemote(userPhoneNumber, markerGroupId))
+                    val response = backendAPI.deleteMarkerGroup(DeleteMarkerGroupReceiveRemote(userPhoneNumber, markerGroupId))
+                    withContext(Dispatchers.Main) {
+                        if (response.isSuccessful) {
+                            recycleViewAdapter.deleteGroup(item)
+                        }
+                    }
                 }
             }
+
             buttonSend.setOnClickListener {
-                val intent = Intent(_context, FriendsActivity::class.java)
+                val intent = Intent(activityContext, FriendsActivity::class.java)
                 intent.putExtra("caller_activity", "MarkerGroupsActivity")
                 intent.putExtra("marker_name", textView.text.toString())
-                _context.startActivity(intent)
+                activityContext.startActivity(intent)
             }
-
-
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val v = LayoutInflater.from(parent.context).inflate(R.layout.marker_groups_rec_view_item, parent, false)
-        val vh = MyViewHolder(v)
+        val vh = MyViewHolder(this, v)
         return vh
     }
 
@@ -80,6 +81,12 @@ class RecycleViewAdapterMarkerGroups(private var mDataset: MutableList<String>?,
     @SuppressLint("NotifyDataSetChanged")
     fun addGroup(groupName: String) {
         mDataset!!.add(groupName)
+        notifyDataSetChanged()
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun deleteGroup(groupName: String?) {
+        mDataset!!.remove(groupName)
         notifyDataSetChanged()
     }
 
