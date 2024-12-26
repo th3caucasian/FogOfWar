@@ -1,4 +1,4 @@
-package com.example.fogofwar.ui.maps
+package com.example.fogofwar.fragments.maps
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -360,8 +360,9 @@ class FragmentMaps : Fragment(), MapListener {
 
         marker.setOnMarkerClickListener { _, _ ->
             val alertDialogBuilder = AlertDialog.Builder(requireContext())
+                .setView(layoutInflater.inflate(R.layout.alert_dialog_add_group, null))
                 .setTitle("Что сделать с маркером?")
-                .setPositiveButton("Добавить в группу (неактивно") { _, _ ->
+                .setPositiveButton("Добавить в группу (неактивно)") { _, _ ->
 
                 }
                 .setNeutralButton("Отмена") {_, _ ->}

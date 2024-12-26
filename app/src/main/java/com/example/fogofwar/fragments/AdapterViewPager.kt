@@ -1,4 +1,4 @@
-package com.example.fogofwar.ui
+package com.example.fogofwar.fragments
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity

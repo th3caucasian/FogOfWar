@@ -21,7 +21,7 @@ class FriendsActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
 
     private lateinit var backendAPI: BackendAPI
-    private lateinit var userFriends: List<String>
+    private lateinit var userFriends: MutableList<String>
     private var callerActivity: String? = null
     private var markerName: String? = null
 

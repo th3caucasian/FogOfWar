@@ -5,6 +5,8 @@ import com.example.features.updatePoints.UpdatePointsReceiveRemote
 import com.example.fogofwar.backend.remotes.add_friend.AddFriendReceiveRemote
 import com.example.fogofwar.backend.remotes.add_marker.AddMarkerReceiveRemote
 import com.example.fogofwar.backend.remotes.add_marker.AddMarkerResponseRemote
+import com.example.fogofwar.backend.remotes.add_marker_group.AddMarkerGroupReceiveRemote
+import com.example.fogofwar.backend.remotes.add_marker_group.AddMarkerGroupResponseRemote
 import com.example.fogofwar.backend.remotes.delete_friend.DeleteFriendReceiveRemote
 import com.example.fogofwar.backend.remotes.delete_marker.DeleteMarkerReceiveRemote
 import com.example.fogofwar.backend.remotes.delete_marker_group.DeleteMarkerGroupReceiveRemote
@@ -67,27 +69,32 @@ interface BackendAPI {
 
     @POST("/friends/get")
     suspend fun getFriends(
-        @Body user: GetFriendsReceiveRemote
+        @Body friends: GetFriendsReceiveRemote
     ): Response<GetFriendsResponseRemote>
 
     @POST("/marker-group/get")
     suspend fun getMarkerGroups(
-        @Body user: GetMarkerGroupsReceiveRemote
+        @Body markerGroup: GetMarkerGroupsReceiveRemote
     ): Response<GetMarkerGroupsResponseRemote>
 
     @POST("/marker-group/share")
     suspend fun shareMarkerGroups(
-        @Body user: ShareMarkerGroupReceiveRemote
+        @Body markerGroup: ShareMarkerGroupReceiveRemote
     ): Response<Unit>
 
     @POST("/marker-group/delete")
     suspend fun deleteMarkerGroup(
-        @Body user: DeleteMarkerGroupReceiveRemote
+        @Body markerGroup: DeleteMarkerGroupReceiveRemote
     ): Response<Unit>
 
     @POST("/friends/delete")
     suspend fun deleteFriend(
-        @Body user: DeleteFriendReceiveRemote
+        @Body friend: DeleteFriendReceiveRemote
     ): Response<Unit>
+
+    @POST("/marker-group/add")
+    suspend fun addMarkerGroup(
+        @Body group: AddMarkerGroupReceiveRemote
+    ): Response<AddMarkerGroupResponseRemote>
 
 }

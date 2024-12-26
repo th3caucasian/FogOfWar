@@ -1,4 +1,4 @@
-package com.example.fogofwar.ui.profile
+package com.example.fogofwar.fragments.profile
 
 import android.content.Intent
 import android.os.Bundle

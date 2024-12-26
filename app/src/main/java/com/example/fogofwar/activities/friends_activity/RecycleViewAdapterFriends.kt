@@ -1,5 +1,6 @@
 package com.example.fogofwar.activities.friends_activity
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -24,7 +25,7 @@ import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class RecycleViewAdapterFriends(private var mDataset: List<String>?, private var callerActivity: String?, private var markerGroupName: String?, private val context: Context): RecyclerView.Adapter<RecycleViewAdapterFriends.MyViewHolder>() {
+class RecycleViewAdapterFriends(private var mDataset: MutableList<String>?, private var callerActivity: String?, private var markerGroupName: String?, private val context: Context): RecyclerView.Adapter<RecycleViewAdapterFriends.MyViewHolder>() {
 
 
 
@@ -34,13 +35,8 @@ class RecycleViewAdapterFriends(private var mDataset: List<String>?, private var
         private val buttonDelete: ImageButton = v.findViewById(R.id.buttonDelete)
         private var userPhoneNumber = "89880888306"
 
-
-        fun bind(
-            item: String?,
-            _callerActivity: String?,
-            _markerGroupName: String?,
-            _context: Context
-        ) {
+        // TODO: Сделать пропажу списка при удалении сразу
+        fun bind(item: String?, _callerActivity: String?, _markerGroupName: String?, _context: Context) {
             val retrofit = Retrofit.Builder()
                 .baseUrl("http://192.168.69.194:8081/")
                 .addConverterFactory(GsonConverterFactory.create())
@@ -48,26 +44,17 @@ class RecycleViewAdapterFriends(private var mDataset: List<String>?, private var
             val backendAPI = retrofit.create(BackendAPI::class.java)
 
 
-
             textView.text = item
             buttonAdd.text = "ADDED"
             if (_callerActivity == "MarkerGroupsActivity") {
                 textView.setOnClickListener {
                     CoroutineScope(Dispatchers.IO).launch {
-                        val markerGroups =
-                            backendAPI.getMarkerGroups(GetMarkerGroupsReceiveRemote(userPhoneNumber))
-                                .body()!!.markerGroups
+                        val markerGroups = backendAPI.getMarkerGroups(GetMarkerGroupsReceiveRemote(userPhoneNumber)).body()!!.markerGroups
                         val markerGroupId = markerGroups.find { it.name == _markerGroupName }!!.id!!
-                        backendAPI.shareMarkerGroups(
-                            ShareMarkerGroupReceiveRemote(
-                                markerGroupId,
-                                textView.text.toString()
-                            )
-                        )
+                        backendAPI.shareMarkerGroups(ShareMarkerGroupReceiveRemote(markerGroupId, textView.text.toString()))
                         val alertDialogBuilder = AlertDialog.Builder(_context)
                             .setTitle("Группа маркеров была успешно передана пользователю")
-                            .setPositiveButton("Ок") { _, _ ->
-                            }
+                            .setPositiveButton("Ок") { _, _ -> }
                         val alertDialog = alertDialogBuilder.create()
                         alertDialog.show()
                     }
@@ -76,19 +63,11 @@ class RecycleViewAdapterFriends(private var mDataset: List<String>?, private var
             } else {
                 buttonDelete.setOnClickListener {
                     CoroutineScope(Dispatchers.IO).launch {
-                        val friends =
-                            backendAPI.getFriends(GetFriendsReceiveRemote(userPhoneNumber))
-                                .body()!!.friendsNumbers
+                        val friends = backendAPI.getFriends(GetFriendsReceiveRemote(userPhoneNumber)).body()!!.friendsNumbers
                         val friendNumber = friends.find { it == textView.text.toString() }!!
-                        backendAPI.deleteFriend(
-                            DeleteFriendReceiveRemote(
-                                userPhoneNumber,
-                                friendNumber
-                            )
-                        )
+                        backendAPI.deleteFriend(DeleteFriendReceiveRemote(userPhoneNumber, friendNumber))
                     }
                 }
-
             }
         }
     }
@@ -98,6 +77,7 @@ class RecycleViewAdapterFriends(private var mDataset: List<String>?, private var
         val vh = MyViewHolder(v)
         return vh
     }
+
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         holder.bind(mDataset!![position], callerActivity, markerGroupName, context)

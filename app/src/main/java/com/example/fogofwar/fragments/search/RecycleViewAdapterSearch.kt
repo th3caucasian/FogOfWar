@@ -1,4 +1,4 @@
-package com.example.fogofwar.ui.search
+package com.example.fogofwar.fragments.search
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
@@ -6,13 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fogofwar.R
 import com.example.fogofwar.backend.BackendAPI
 import com.example.fogofwar.backend.remotes.add_friend.AddFriendReceiveRemote
 import com.example.fogofwar.backend.remotes.get_friends.GetFriendsReceiveRemote
-import com.example.fogofwar.backend.remotes.get_user.GetUserReceiveRemote
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
