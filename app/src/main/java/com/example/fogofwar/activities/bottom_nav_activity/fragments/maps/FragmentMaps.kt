@@ -116,7 +116,6 @@ class FragmentMaps : Fragment(), MapListener {
         mapView.overlays.add(myLocationOverlay)
         mapView.visibility = View.VISIBLE
         mapViewMarkers.visibility = View.INVISIBLE
-        mapViewMarkers.onPause()
         return root
     }
 
@@ -142,7 +141,6 @@ class FragmentMaps : Fragment(), MapListener {
 
         currentIcon = BitmapFactory.decodeResource(resources, R.drawable.location_arrow_2)         // Если использовать эту переменную - иконка не отображается (видимо дело в размере)
         scaledIcon = Bitmap.createScaledBitmap(currentIcon, 100, 100, true)  // Если использовать эту - то всё отлично работает
-
     }
 
 
@@ -181,7 +179,6 @@ class FragmentMaps : Fragment(), MapListener {
 
         currentIcon = BitmapFactory.decodeResource(resources, R.drawable.location_arrow_2)         // Если использовать эту переменную - иконка не отображается (видимо дело в размере)
         scaledIcon = Bitmap.createScaledBitmap(currentIcon, 100, 100, true)  // Если использовать эту - то всё отлично работает
-
     }
 
 
@@ -211,6 +208,7 @@ class FragmentMaps : Fragment(), MapListener {
     }
 
 
+    // Функция обновления поворота иконки (стрелки пользователя)
     private fun updateIconRotation(inAzimuth: Float) {
         val rotMatrix = Matrix()
         rotMatrix.postRotate(inAzimuth, scaledIcon.width / 2F, scaledIcon.height / 2F)
@@ -364,10 +362,6 @@ class FragmentMaps : Fragment(), MapListener {
     }
 
 
-    // Функция обновления поворота иконки (стрелки пользователя)
-
-
-    // TODO: МАРКЕРЫ СТАВЯТСЯ В ДВОЙНОМ ЭКЗЕМПЛЯРЕ - ПОЧЕМУ???
     private fun addMarker(geoPoint: GeoPoint, description: String?, markerId: Long?) {
         val marker = Marker(mapViewMarkers).apply {
             position = geoPoint
@@ -450,16 +444,6 @@ class FragmentMaps : Fragment(), MapListener {
         mapViewMarkers.invalidate()
     }
 
-    private fun setDialogButtonsListeners(markerId: Any?) {
-        val groupNameView = bindingAlertDialog.groupName
-        val descriptionView = bindingAlertDialog.description
-        val buttonMarkerToGroup = bindingAlertDialog.buttonMarkerToGroup
-        val buttonDeleteMarkerFromGroup = bindingAlertDialog.buttonDeleteMarkerFromGroup
-        val buttonDeleteMarker = bindingAlertDialog.buttonDeleteMarker
-
-        val groupName: String
-
-    }
 
     private fun deleteMarker(marker: Marker) {
         try {
@@ -483,27 +467,5 @@ class FragmentMaps : Fragment(), MapListener {
         mapView.invalidate()
         return false
     }
-
-
-    override fun onResume() {
-        super.onResume()
-//        when (activeMapFog) {
-//            true -> {
-//                mapView.overlays.add(myLocationOverlay)
-//                mapView.visibility = View.VISIBLE
-//                mapViewMarkers.visibility = View.INVISIBLE
-//                mapViewMarkers.onPause()
-//            }
-//
-//            false -> {
-//                mapViewMarkers.overlays.add(myLocationOverlay)
-//                mapView.visibility = View.INVISIBLE
-//                mapViewMarkers.visibility = View.VISIBLE
-//                mapViewMarkers.onResume()
-//            }
-//
-//        }
-    }
-
 
 }

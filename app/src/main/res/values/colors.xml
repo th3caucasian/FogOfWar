@@ -12,4 +12,6 @@
     <color name="beige">#EFCEAD</color>
     <color name="half_transp">#80000000</color>
     <color name="red">#A81414</color>
+    <color name="snow_white">#EDF0F2</color>
+    <color name="blue">#617AFA</color>
 </resources>
