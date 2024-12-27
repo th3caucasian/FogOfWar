@@ -53,11 +53,13 @@ class RecycleViewAdapterFriends(private var mDataset: MutableList<String>?, priv
                         val markerGroups = backendAPI.getMarkerGroups(GetMarkerGroupsReceiveRemote(userPhoneNumber)).body()!!.markerGroups
                         val markerGroupId = markerGroups.find { it.name == _markerGroupName }!!.id!!
                         backendAPI.shareMarkerGroups(ShareMarkerGroupReceiveRemote(markerGroupId, textView.text.toString()))
-                        val alertDialogBuilder = AlertDialog.Builder(_context)
-                            .setTitle("Группа маркеров была успешно передана пользователю")
-                            .setPositiveButton("Ок") { _, _ -> }
-                        val alertDialog = alertDialogBuilder.create()
-                        alertDialog.show()
+                        withContext(Dispatchers.Main) {
+                            val alertDialogBuilder = AlertDialog.Builder(_context)
+                                .setTitle("Группа маркеров была успешно передана пользователю")
+                                .setPositiveButton("Ок") { _, _ -> }
+                            val alertDialog = alertDialogBuilder.create()
+                            alertDialog.show()
+                        }
                     }
                     textView.isClickable = false
                 }

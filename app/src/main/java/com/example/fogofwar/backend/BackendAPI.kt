@@ -7,11 +7,15 @@ import com.example.fogofwar.backend.remotes.add_marker.AddMarkerReceiveRemote
 import com.example.fogofwar.backend.remotes.add_marker.AddMarkerResponseRemote
 import com.example.fogofwar.backend.remotes.add_marker_group.AddMarkerGroupReceiveRemote
 import com.example.fogofwar.backend.remotes.add_marker_group.AddMarkerGroupResponseRemote
+import com.example.fogofwar.backend.remotes.add_marker_to_group.AddMarkerToGroupReceiveRemote
 import com.example.fogofwar.backend.remotes.delete_friend.DeleteFriendReceiveRemote
 import com.example.fogofwar.backend.remotes.delete_marker.DeleteMarkerReceiveRemote
+import com.example.fogofwar.backend.remotes.delete_marker_from_group.DeleteMarkerFromGroupReceiveRemote
 import com.example.fogofwar.backend.remotes.delete_marker_group.DeleteMarkerGroupReceiveRemote
 import com.example.fogofwar.backend.remotes.get_friends.GetFriendsReceiveRemote
 import com.example.fogofwar.backend.remotes.get_friends.GetFriendsResponseRemote
+import com.example.fogofwar.backend.remotes.get_groups_of_marker.GetGroupsOfMarkerReceiveRemote
+import com.example.fogofwar.backend.remotes.get_groups_of_marker.GetGroupsOfMarkerResponseRemote
 import com.example.fogofwar.backend.remotes.get_marker_groups.GetMarkerGroupsReceiveRemote
 import com.example.fogofwar.backend.remotes.get_marker_groups.GetMarkerGroupsResponseRemote
 import com.example.fogofwar.backend.remotes.get_markers.GetMarkersReceiveRemote
@@ -48,7 +52,7 @@ interface BackendAPI {
     ): Response<GetMarkersResponseRemote>
 
     @POST("/markers/add")
-    suspend fun addMarkers(
+    suspend fun addMarker(
         @Body marker: AddMarkerReceiveRemote
     ): Response<AddMarkerResponseRemote>
 
@@ -96,5 +100,20 @@ interface BackendAPI {
     suspend fun addMarkerGroup(
         @Body group: AddMarkerGroupReceiveRemote
     ): Response<AddMarkerGroupResponseRemote>
+
+    @POST("/marker/marker-group")
+    suspend fun getGroupsOfMarker(
+        @Body groups: GetGroupsOfMarkerReceiveRemote
+    ): Response<GetGroupsOfMarkerResponseRemote>
+
+    @POST("/marker-group/add-marker")
+    suspend fun addMarkerToGroup(
+        @Body markerInfo: AddMarkerToGroupReceiveRemote
+    ): Response<Unit>
+
+    @POST("/marker-group/delete-marker")
+    suspend fun deleteMarkerFromGroup(
+        @Body markerInfo: DeleteMarkerFromGroupReceiveRemote
+    ): Response<Unit>
 
 }

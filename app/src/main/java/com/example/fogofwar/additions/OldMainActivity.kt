@@ -262,7 +262,7 @@ class OldMainActivity : AppCompatActivity(), MapListener {
             CoroutineScope(Dispatchers.IO).launch {
                 val geoAsPoint = Point(geoPoint.latitude, geoPoint.longitude)
                 val addMarkerReceiveRemote = AddMarkerReceiveRemote(userPhoneNumber, geoAsPoint, marker.title)
-                val markerId = backendAPI.addMarkers(addMarkerReceiveRemote).body()!!.markerId
+                val markerId = backendAPI.addMarker(addMarkerReceiveRemote).body()!!.markerId
                 marker.relatedObject = markerId
             }
         }

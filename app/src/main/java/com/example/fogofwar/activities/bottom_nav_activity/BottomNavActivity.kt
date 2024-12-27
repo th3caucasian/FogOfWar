@@ -6,10 +6,10 @@ import androidx.fragment.app.Fragment
 import androidx.viewpager2.widget.ViewPager2
 import com.example.fogofwar.R
 import com.example.fogofwar.databinding.ActivityBottomNavBinding
-import com.example.fogofwar.fragments.AdapterViewPager
-import com.example.fogofwar.fragments.maps.FragmentMaps
-import com.example.fogofwar.fragments.profile.FragmentProfile
-import com.example.fogofwar.fragments.search.FragmentSearch
+import com.example.fogofwar.activities.bottom_nav_activity.fragments.AdapterViewPager
+import com.example.fogofwar.activities.bottom_nav_activity.fragments.maps.FragmentMaps
+import com.example.fogofwar.activities.bottom_nav_activity.fragments.profile.FragmentProfile
+import com.example.fogofwar.activities.bottom_nav_activity.fragments.search.FragmentSearch
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class BottomNavActivity : AppCompatActivity() {

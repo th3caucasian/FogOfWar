@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.fogofwar.R
 import com.example.fogofwar.activities.friends_activity.FriendsActivity
 import com.example.fogofwar.backend.BackendAPI
+import com.example.fogofwar.backend.remotes.add_marker_to_group.AddMarkerToGroupReceiveRemote
+import com.example.fogofwar.backend.remotes.delete_marker_from_group.DeleteMarkerFromGroupReceiveRemote
 import com.example.fogofwar.backend.remotes.delete_marker_group.DeleteMarkerGroupReceiveRemote
 import com.example.fogofwar.backend.remotes.get_marker_groups.GetMarkerGroupsReceiveRemote
 import kotlinx.coroutines.CoroutineScope
@@ -21,7 +23,7 @@ import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class RecycleViewAdapterMarkerGroups(private var mDataset: MutableList<String>?, private var context: Context): RecyclerView.Adapter<RecycleViewAdapterMarkerGroups.MyViewHolder>() {
+class RecycleViewAdapterMarkerGroups(private var mDataset: MutableList<String>?, private var context: Context, private val markerId: Long?, private val action: String): RecyclerView.Adapter<RecycleViewAdapterMarkerGroups.MyViewHolder>() {
 
 
 
@@ -39,7 +41,13 @@ class RecycleViewAdapterMarkerGroups(private var mDataset: MutableList<String>?,
 
 
         // TODO: Сделать пропажу списка при удалении сразу
-        fun bind(item: String?, activityContext: Context) {
+        fun bind(item: String?, activityContext: Context, vhMarkerId: Long?, vhAction: String) {
+
+            when (vhAction) {
+                "add" -> buttonSend.isClickable = false
+                "delete" -> buttonSend.isClickable = false
+                "show" -> textView.isClickable = false
+            }
 
             textView.text = item
             buttonDelete.setOnClickListener {
@@ -61,6 +69,23 @@ class RecycleViewAdapterMarkerGroups(private var mDataset: MutableList<String>?,
                 intent.putExtra("marker_name", textView.text.toString())
                 activityContext.startActivity(intent)
             }
+
+            textView.setOnClickListener {
+                CoroutineScope(Dispatchers.IO).launch {
+                    val markerGroups = backendAPI.getMarkerGroups(GetMarkerGroupsReceiveRemote(userPhoneNumber)).body()!!.markerGroups
+                    val markerGroupId = markerGroups.find { it.name == textView.text.toString() }!!.id!!
+                    val response = when (vhAction) {
+                        "add" -> backendAPI.addMarkerToGroup(AddMarkerToGroupReceiveRemote(vhMarkerId!!, markerGroupId))
+                        "delete" -> backendAPI.deleteMarkerFromGroup(DeleteMarkerFromGroupReceiveRemote(vhMarkerId!!, markerGroupId))
+                        else -> null
+                    }
+                    withContext(Dispatchers.Main) {
+                        if (response!!.isSuccessful) {
+                            (activityContext as MarkerGroupsActivity).finish()
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -71,7 +96,7 @@ class RecycleViewAdapterMarkerGroups(private var mDataset: MutableList<String>?,
     }
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        holder.bind(mDataset!![position], context)
+        holder.bind(mDataset!![position], context, markerId, action)
     }
 
     override fun getItemCount(): Int {

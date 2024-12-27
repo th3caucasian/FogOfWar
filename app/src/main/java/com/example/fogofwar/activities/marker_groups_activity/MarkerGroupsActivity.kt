@@ -62,12 +62,13 @@ class MarkerGroupsActivity : AppCompatActivity() {
             .build()
         backendAPI = retrofit.create(BackendAPI::class.java)
 
-
+        val markerId = intent.getLongExtra("marker_id", -1)
+        val action = intent.getStringExtra("action")
         CoroutineScope(Dispatchers.IO).launch {
             markerGroups = backendAPI.getMarkerGroups(GetMarkerGroupsReceiveRemote(userPhoneNumber)).body()!!.markerGroups
             markerGroupsNames = markerGroups.map { it.name }.toMutableList()
             withContext(Dispatchers.Main) {
-                adapter = RecycleViewAdapterMarkerGroups(markerGroupsNames, this@MarkerGroupsActivity)
+                adapter = RecycleViewAdapterMarkerGroups(markerGroupsNames, this@MarkerGroupsActivity, markerId, action!!)
                 layoutManager = LinearLayoutManager(this@MarkerGroupsActivity)
                 recyclerView = binding.recyclerView
                 recyclerView.setHasFixedSize(true)

@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/white"
-    tools:context=".fragments.profile.FragmentProfile">
+    tools:context=".activities.bottom_nav_activity.fragments.profile.FragmentProfile">
 
 
     <Button

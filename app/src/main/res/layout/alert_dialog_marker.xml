@@ -1,0 +1,55 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/groupName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Название группы"
+        android:textSize="25sp"
+        android:textColor="@color/green"
+        app:layout_constraintVertical_bias="0.32" />
+
+
+    <TextView
+        android:id="@+id/description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Описание"
+        android:textSize="25sp"
+        android:textColor="@color/green"
+        android:scrollbars="vertical"
+        app:layout_constraintVertical_bias="0.32" />
+
+
+    <Button
+        android:id="@+id/buttonMarkerToGroup"
+        android:layout_width="match_parent"
+        android:layout_height="49dp"
+        android:gravity="center"
+        android:backgroundTint="@color/green"
+        android:text="Добавить в группу" />
+
+    <Button
+        android:id="@+id/buttonDeleteMarkerFromGroup"
+        android:layout_width="match_parent"
+        android:layout_height="49dp"
+        android:gravity="center"
+        android:backgroundTint="@color/red"
+        android:text="Удалить из группы" />
+
+    <Button
+        android:id="@+id/buttonDeleteMarker"
+        android:layout_width="match_parent"
+        android:layout_height="49dp"
+        android:gravity="center"
+        android:backgroundTint="@color/red"
+        android:text="Удалить" />
+
+</LinearLayout>
