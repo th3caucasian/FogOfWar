@@ -88,11 +88,11 @@ class FragmentMaps : Fragment(), MapListener {
     private lateinit var locationRequest: LocationRequest
     private lateinit var compassOrientationProvider: InternalCompassOrientationProvider
     private lateinit var backendAPI: BackendAPI
+    private lateinit var userPhoneNumber: String
 
     private var userPointsFromDB = mutableListOf<Point>()
     private var userMarkersFromDB = mutableListOf<MarkerDTO>()
     private var newlyClearedPoints = mutableListOf<Point>()
-    private var userPhoneNumber = "89880888306"
     private var activeMapFog = true
 
 
@@ -276,11 +276,11 @@ class FragmentMaps : Fragment(), MapListener {
         buttonToTaganrog.setOnClickListener {
             when (activeMapFog){
                 true -> {
-                    mapPointsController.animateTo(GeoPoint(userPointsFromDB[0].latitude, userPointsFromDB[1].longitude))
+                    mapPointsController.animateTo(GeoPoint(47.207451,38.9398434))   // Taganrog
                     mapPointsController.setZoom(18.0)
                 }
                 false -> {
-                    mapMarkersController.animateTo(GeoPoint(userPointsFromDB[0].latitude, userPointsFromDB[1].longitude))
+                    mapMarkersController.animateTo(GeoPoint(47.207451,38.9398434))  // Taganrog
                     mapMarkersController.setZoom(18.0)
                 }
             }
@@ -295,7 +295,7 @@ class FragmentMaps : Fragment(), MapListener {
                         mapViewMarkers.onResume()
                         mapView.onPause()
                         activeMapFog = !activeMapFog
-                        mapPointsController.animateTo(GeoPoint(userPointsFromDB[0].latitude, userPointsFromDB[1].longitude))
+                        mapPointsController.animateTo(GeoPoint(47.207451,38.9398434)) // Taganrog
                 }
                 false -> {
                     mapViewMarkers.visibility = View.INVISIBLE
@@ -303,7 +303,7 @@ class FragmentMaps : Fragment(), MapListener {
                     mapView.onResume()
                     mapViewMarkers.onPause()
                     activeMapFog = !activeMapFog
-                    mapMarkersController.animateTo(GeoPoint(userPointsFromDB[0].latitude, userPointsFromDB[1].longitude))
+                    mapMarkersController.animateTo(GeoPoint(47.207451,38.9398434))  // Taganrog
                 }
 
             }
@@ -338,6 +338,7 @@ class FragmentMaps : Fragment(), MapListener {
 
 
     private fun loadUserData() {
+        userPhoneNumber = arguments?.getString("user_phone_number")!!
         val getPointsReceiveRemote = GetPointsReceiveRemote(userPhoneNumber)
         val getMarkersReceiveRemote = GetMarkersReceiveRemote(userPhoneNumber)
         CoroutineScope(Dispatchers.IO).launch {

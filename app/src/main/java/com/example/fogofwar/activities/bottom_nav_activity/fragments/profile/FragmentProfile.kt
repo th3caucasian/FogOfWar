@@ -15,23 +15,27 @@ class FragmentProfile : Fragment() {
     private lateinit var binding: FragmentProfileBinding
     private lateinit var buttonFriends: Button
     private lateinit var buttonMarkerGroups: Button
+    private lateinit var userPhoneNumber: String
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentProfileBinding.inflate(inflater, container, false)
         val root = binding.root
         buttonFriends = binding.Friends
         buttonMarkerGroups = binding.markerGroups
+        userPhoneNumber = arguments?.getString("user_phone_number")!!
 
 
         buttonFriends.setOnClickListener {
             val intent = Intent(requireActivity(), FriendsActivity::class.java)
             intent.putExtra("caller_activity", "ButtomNavActivity")
+            intent.putExtra("user_phone_number", userPhoneNumber)
             startActivity(intent)
         }
 
         buttonMarkerGroups.setOnClickListener {
             val intent = Intent(requireActivity(), MarkerGroupsActivity::class.java)
             intent.putExtra("action", "show")
+            intent.putExtra("user_phone_number", userPhoneNumber)
             startActivity(intent)
         }
 

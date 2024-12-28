@@ -91,6 +91,7 @@
         app:layout_constraintVertical_bias="0.638" />
 
     <Button
+        android:id="@+id/buttonRegister"
         style="@style/RegisterButtonStyle"
         android:layout_width="300dp"
         android:layout_height="wrap_content"

@@ -26,15 +26,18 @@ import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class RecycleViewAdapterFriends(private var mDataset: MutableList<String>?, private var callerActivity: String?, private var markerGroupName: String?, private val context: Context): RecyclerView.Adapter<RecycleViewAdapterFriends.MyViewHolder>() {
+class RecycleViewAdapterFriends(private var userPhoneNumber: String,
+                                private var mDataset: MutableList<String>?,
+                                private var callerActivity: String?,
+                                private var markerGroupName: String?,
+                                private val context: Context): RecyclerView.Adapter<RecycleViewAdapterFriends.MyViewHolder>() {
 
 
 
-    class MyViewHolder(private val recycleViewAdapter: RecycleViewAdapterFriends, v: View): RecyclerView.ViewHolder(v) {
+    class MyViewHolder(private val recycleViewAdapter: RecycleViewAdapterFriends, v: View, private var vhUserPhoneNumber: String): RecyclerView.ViewHolder(v) {
         private val textView: TextView = v.findViewById(R.id.textView)
         private val buttonAdd: Button = v.findViewById(R.id.buttonAdd)
         private val buttonDelete: ImageButton = v.findViewById(R.id.buttonDelete)
-        private var userPhoneNumber = "89880888306"
 
         // TODO: Сделать пропажу списка при удалении сразу
         fun bind(item: String?, _callerActivity: String?, _markerGroupName: String?, _context: Context) {
@@ -50,7 +53,7 @@ class RecycleViewAdapterFriends(private var mDataset: MutableList<String>?, priv
             if (_callerActivity == "MarkerGroupsActivity") {
                 textView.setOnClickListener {
                     CoroutineScope(Dispatchers.IO).launch {
-                        val markerGroups = backendAPI.getMarkerGroups(GetMarkerGroupsReceiveRemote(userPhoneNumber)).body()!!.markerGroups
+                        val markerGroups = backendAPI.getMarkerGroups(GetMarkerGroupsReceiveRemote(vhUserPhoneNumber)).body()!!.markerGroups
                         val markerGroupId = markerGroups.find { it.name == _markerGroupName }!!.id!!
                         backendAPI.shareMarkerGroups(ShareMarkerGroupReceiveRemote(markerGroupId, textView.text.toString()))
                         withContext(Dispatchers.Main) {
@@ -66,9 +69,9 @@ class RecycleViewAdapterFriends(private var mDataset: MutableList<String>?, priv
             } else {
                 buttonDelete.setOnClickListener {
                     CoroutineScope(Dispatchers.IO).launch {
-                        val friends = backendAPI.getFriends(GetFriendsReceiveRemote(userPhoneNumber)).body()!!.friendsNumbers
+                        val friends = backendAPI.getFriends(GetFriendsReceiveRemote(vhUserPhoneNumber)).body()!!.friendsNumbers
                         val friendNumber = friends.find { it == textView.text.toString() }!!
-                        val response = backendAPI.deleteFriend(DeleteFriendReceiveRemote(userPhoneNumber, friendNumber))
+                        val response = backendAPI.deleteFriend(DeleteFriendReceiveRemote(vhUserPhoneNumber, friendNumber))
                         withContext(Dispatchers.Main) {
                             if (response.isSuccessful) {
                                 recycleViewAdapter.deleteFriend(item)
@@ -82,7 +85,7 @@ class RecycleViewAdapterFriends(private var mDataset: MutableList<String>?, priv
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val v = LayoutInflater.from(parent.context).inflate(R.layout.recycler_view_item, parent, false)
-        val vh = MyViewHolder(this, v)
+        val vh = MyViewHolder(this, v, userPhoneNumber)
         return vh
     }
 

@@ -1,17 +1,18 @@
-package com.example.fogofwar.activities.registration_activity
+package com.example.fogofwar.activities.login_activity
 
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
-import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.fogofwar.R
 import com.example.fogofwar.activities.bottom_nav_activity.BottomNavActivity
-import com.example.fogofwar.activities.login_activity.LoginActivity
 import com.example.fogofwar.backend.BackendAPI
+import com.example.fogofwar.backend.remotes.login.LoginReceiveRemote
 import com.example.fogofwar.backend.remotes.register.RegisterReceiveRemote
+import com.example.fogofwar.databinding.ActivityLoginBinding
 import com.example.fogofwar.databinding.ActivityRegistraitionBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -19,28 +20,27 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.HTTP
 
-class RegistraitionActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityRegistraitionBinding
+class LoginActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityLoginBinding
     private lateinit var phoneNumberView: TextView
-    private lateinit var loginView: TextView
     private lateinit var passwordView: TextView
-    private lateinit var toLoginView: TextView
-    private lateinit var buttonRegister: Button
+    private lateinit var buttonToRegister: ImageButton
+    private lateinit var buttonLogin: Button
 
     private lateinit var backendAPI: BackendAPI
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityRegistraitionBinding.inflate(layoutInflater)
+        setContentView(R.layout.activity_login)
+
+        binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
         phoneNumberView = binding.phoneNumber
-        loginView = binding.login
         passwordView = binding.password
-        toLoginView = binding.toLogin
-        buttonRegister = binding.buttonRegister
+        buttonToRegister = binding.buttonToRegister
+        buttonLogin = binding.buttonLogin
 
         val retrofit = Retrofit.Builder()
             .baseUrl("http://192.168.69.194:8081/")
@@ -48,20 +48,17 @@ class RegistraitionActivity : AppCompatActivity() {
             .build()
         backendAPI = retrofit.create(BackendAPI::class.java)
 
-        buttonRegister.setOnClickListener {
-            if (phoneNumberView.text.length != 11) {
+        buttonLogin.setOnClickListener {
+            if (phoneNumberView.text.length == 0) {
                 Toast.makeText(this, "Неверный формат номера телефона", 2).show()
-            }
-            else if (loginView.text.length < 2) {
-                Toast.makeText(this, "Имя пользователя должно состоять минимум из двух символов", 2).show()
             }
             else if (passwordView.text != "") {
                 CoroutineScope(Dispatchers.IO).launch {
-                    val response = backendAPI.register(RegisterReceiveRemote(loginView.text.toString(), phoneNumberView.text.toString(), passwordView.text.toString()))
+                    val response = backendAPI.login(LoginReceiveRemote(phoneNumberView.text.toString(), passwordView.text.toString()))
                     if (response.isSuccessful) {
                         val userPhoneNumber = phoneNumberView.text.toString()
                         withContext(Dispatchers.Main) {
-                            val intent = Intent(this@RegistraitionActivity, BottomNavActivity::class.java)
+                            val intent = Intent(this@LoginActivity, BottomNavActivity::class.java)
                             intent.putExtra("user_phone_number", userPhoneNumber)
                             startActivity(intent)
                         }
@@ -69,13 +66,12 @@ class RegistraitionActivity : AppCompatActivity() {
                 }
             }
             else {
-                Toast.makeText(this, "Введите корректный пароль", 2).show()
+                Toast.makeText(this, "Введите корректные данные", 2).show()
             }
         }
 
-        toLoginView.setOnClickListener {
-            val intent = Intent(this, LoginActivity::class.java)
-            startActivity(intent)
+        buttonToRegister.setOnClickListener {
+            finish()
         }
     }
 }

@@ -5,10 +5,13 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@color/white"
+    android:fitsSystemWindows="true"
+    android:windowSoftInputMode="adjustPan"
     tools:context=".activities.bottom_nav_activity.fragments.search.FragmentSearch">
 
 
     <androidx.appcompat.widget.SearchView
+        style="@style/SearchViewStyle"
         android:id="@+id/searchView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

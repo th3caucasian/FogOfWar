@@ -23,6 +23,8 @@ import com.example.fogofwar.backend.remotes.get_markers.GetMarkersResponseRemote
 import com.example.fogofwar.backend.remotes.get_points.GetPointsReceiveRemote
 import com.example.fogofwar.backend.remotes.get_points.GetPointsResponseRemote
 import com.example.fogofwar.backend.remotes.get_user.GetUserReceiveRemote
+import com.example.fogofwar.backend.remotes.login.LoginReceiveRemote
+import com.example.fogofwar.backend.remotes.login.LoginResponseRemote
 import com.example.fogofwar.backend.remotes.register.RegisterReceiveRemote
 import com.example.fogofwar.backend.remotes.register.RegisterResponseRemote
 import com.example.fogofwar.backend.remotes.share_marker_group.ShareMarkerGroupReceiveRemote
@@ -35,6 +37,11 @@ interface BackendAPI {
     suspend fun register(
         @Body userInfo: RegisterReceiveRemote
     ): Response<RegisterResponseRemote>
+
+    @POST("/login")
+    suspend fun login(
+        @Body userInfo: LoginReceiveRemote
+    ): Response<LoginResponseRemote>
 
     @POST("/points/update")
     suspend fun updatePoints(

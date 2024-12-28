@@ -61,6 +61,7 @@ class MarkerGroupsActivity : AppCompatActivity() {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         backendAPI = retrofit.create(BackendAPI::class.java)
+        userPhoneNumber = intent.getStringExtra("user_phone_number")!!
 
         val markerId = intent.getLongExtra("marker_id", -1)
         val action = intent.getStringExtra("action")
@@ -68,7 +69,7 @@ class MarkerGroupsActivity : AppCompatActivity() {
             markerGroups = backendAPI.getMarkerGroups(GetMarkerGroupsReceiveRemote(userPhoneNumber)).body()!!.markerGroups
             markerGroupsNames = markerGroups.map { it.name }.toMutableList()
             withContext(Dispatchers.Main) {
-                adapter = RecycleViewAdapterMarkerGroups(markerGroupsNames, this@MarkerGroupsActivity, markerId, action!!)
+                adapter = RecycleViewAdapterMarkerGroups(userPhoneNumber, markerGroupsNames, this@MarkerGroupsActivity, markerId, action!!)
                 layoutManager = LinearLayoutManager(this@MarkerGroupsActivity)
                 recyclerView = binding.recyclerView
                 recyclerView.setHasFixedSize(true)

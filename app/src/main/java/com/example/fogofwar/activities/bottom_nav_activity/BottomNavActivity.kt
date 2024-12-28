@@ -17,10 +17,15 @@ class BottomNavActivity : AppCompatActivity() {
     lateinit var bottomNavView: BottomNavigationView
     var fragmentsArrayList = ArrayList<Fragment>()
 
+    var userPhoneNumber: String? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val binding = ActivityBottomNavBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        userPhoneNumber = intent.getStringExtra("user_phone_number")
+        val bundle = Bundle()
+        bundle.putString("user_phone_number", userPhoneNumber)
 
         bottomNavView = binding.bottomNavView
         viewPager = binding.viewPager
@@ -29,6 +34,8 @@ class BottomNavActivity : AppCompatActivity() {
         fragmentsArrayList += FragmentMaps()
         fragmentsArrayList += FragmentSearch()
         fragmentsArrayList += FragmentProfile()
+        for (fragment in fragmentsArrayList)
+            fragment.arguments = bundle
 
         val adapterViewPager = AdapterViewPager(this, fragmentsArrayList)
         viewPager.adapter = adapterViewPager

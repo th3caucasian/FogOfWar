@@ -25,7 +25,7 @@ class FriendsActivity : AppCompatActivity() {
     private var callerActivity: String? = null
     private var markerName: String? = null
 
-    private var userPhoneNumber = "89880888306"
+    private lateinit var userPhoneNumber: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,6 +37,7 @@ class FriendsActivity : AppCompatActivity() {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         backendAPI = retrofit.create(BackendAPI::class.java)
+        userPhoneNumber = intent.getStringExtra("user_phone_number")!!
 
         callerActivity = intent.getStringExtra("caller_activity")
         if (callerActivity == "MarkerGroupsActivity")
@@ -44,7 +45,7 @@ class FriendsActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             userFriends = backendAPI.getFriends(GetFriendsReceiveRemote(userPhoneNumber)).body()!!.friendsNumbers
             withContext(Dispatchers.Main) {
-                adapter = RecycleViewAdapterFriends(userFriends, callerActivity, markerName, this@FriendsActivity)
+                adapter = RecycleViewAdapterFriends(userPhoneNumber, userFriends, callerActivity, markerName, this@FriendsActivity)
                 layoutManager = LinearLayoutManager(this@FriendsActivity)
                 recyclerView = binding.recyclerView
                 recyclerView.setHasFixedSize(true)

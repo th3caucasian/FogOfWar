@@ -17,29 +17,27 @@ import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class RecycleViewAdapterSearch(private var mDataset: MutableList<String>?): RecyclerView.Adapter<RecycleViewAdapterSearch.MyViewHolder>() {
+class RecycleViewAdapterSearch(private var userPhoneNumber: String, private var mDataset: MutableList<String>?): RecyclerView.Adapter<RecycleViewAdapterSearch.MyViewHolder>() {
     val retrofit = Retrofit.Builder()
         .baseUrl("http://192.168.69.194:8081/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
     val backendAPI = retrofit.create(BackendAPI::class.java)
-    private var userPhoneNumber = "89880888306"
     private lateinit var userFriends: List<String>
 
 
     init {
         CoroutineScope(Dispatchers.IO).launch {
             userFriends = backendAPI.getFriends(GetFriendsReceiveRemote(userPhoneNumber)).body()!!.friendsNumbers
-            val a = 1
         }
     }
 
-    class MyViewHolder(v: View): RecyclerView.ViewHolder(v) {
+    class MyViewHolder(v: View, private val vhUserPhoneNumber: String): RecyclerView.ViewHolder(v) {
         private val textView: TextView = v.findViewById(R.id.textView)
         private val buttonAdd: Button = v.findViewById(R.id.buttonAdd)
 
 
-        fun bind(item: String?, _mDataset: MutableList<String>?, backendAPI: BackendAPI, userFriends: List<String>, userPhoneNumber: String) {
+        fun bind(item: String?, _mDataset: MutableList<String>?, backendAPI: BackendAPI, userFriends: List<String>) {
             textView.text = item
             if (userFriends.contains(item)) {
                 buttonAdd.text = "ADDED"
@@ -51,7 +49,7 @@ class RecycleViewAdapterSearch(private var mDataset: MutableList<String>?): Recy
                 buttonAdd.setOnClickListener {
                     try {
                         CoroutineScope(Dispatchers.IO).launch {
-                            backendAPI.addFriend(AddFriendReceiveRemote(userPhoneNumber, _mDataset!![0]))
+                            backendAPI.addFriend(AddFriendReceiveRemote(vhUserPhoneNumber, _mDataset!![0]))
                         }
                         buttonAdd.text = "ADDED"
                         buttonAdd.isClickable = false
@@ -66,12 +64,12 @@ class RecycleViewAdapterSearch(private var mDataset: MutableList<String>?): Recy
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val v = LayoutInflater.from(parent.context).inflate(R.layout.recycler_view_item, parent, false)
-        val vh = MyViewHolder(v)
+        val vh = MyViewHolder(v, userPhoneNumber)
         return vh
     }
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        holder.bind(mDataset!![position], mDataset, backendAPI, userFriends, userPhoneNumber)
+        holder.bind(mDataset!![position], mDataset, backendAPI, userFriends)
     }
 
     override fun getItemCount(): Int {

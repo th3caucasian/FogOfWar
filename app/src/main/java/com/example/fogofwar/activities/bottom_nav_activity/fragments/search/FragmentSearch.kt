@@ -23,13 +23,13 @@ class FragmentSearch : Fragment() {
     private lateinit var binding: FragmentSearchBinding
     private lateinit var searchView: SearchView
 
-    private lateinit var backendAPI: BackendAPI
-    private var userList = mutableListOf<String>()
     private lateinit var adapter: RecycleViewAdapterSearch
     private lateinit var layoutManager: LinearLayoutManager
     private lateinit var recyclerView: RecyclerView
 
-    private var userPhoneNumber = "89880888306"
+    private lateinit var backendAPI: BackendAPI
+    private var userList = mutableListOf<String>()
+    private lateinit var userPhoneNumber: String
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentSearchBinding.inflate(inflater, container, false)
@@ -39,6 +39,7 @@ class FragmentSearch : Fragment() {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         backendAPI = retrofit.create(BackendAPI::class.java)
+        userPhoneNumber = arguments?.getString("user_phone_number")!!
 
 
         searchView = binding.searchView
@@ -54,7 +55,7 @@ class FragmentSearch : Fragment() {
             }
         })
 
-        adapter = RecycleViewAdapterSearch(userList)
+        adapter = RecycleViewAdapterSearch(userPhoneNumber, userList)
         layoutManager = LinearLayoutManager(requireActivity())
         recyclerView = binding.recyclerView
         recyclerView.setHasFixedSize(true)
