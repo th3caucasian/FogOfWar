@@ -29,7 +29,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var buttonLogin: Button
 
     private lateinit var backendAPI: BackendAPI
-
+    private lateinit var userPhoneNumber: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,8 +56,9 @@ class LoginActivity : AppCompatActivity() {
                 CoroutineScope(Dispatchers.IO).launch {
                     val response = backendAPI.login(LoginReceiveRemote(phoneNumberView.text.toString(), passwordView.text.toString()))
                     if (response.isSuccessful) {
-                        val userPhoneNumber = phoneNumberView.text.toString()
+                        userPhoneNumber = phoneNumberView.text.toString()
                         withContext(Dispatchers.Main) {
+                            saveLogin()
                             val intent = Intent(this@LoginActivity, BottomNavActivity::class.java)
                             intent.putExtra("user_phone_number", userPhoneNumber)
                             startActivity(intent)
@@ -76,5 +77,12 @@ class LoginActivity : AppCompatActivity() {
         buttonToRegister.setOnClickListener {
             finish()
         }
+    }
+
+    private fun saveLogin() {
+        val sharedPreferences = getSharedPreferences("AppPreferences", MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putString("user_phone_number", userPhoneNumber)
+        editor.apply()
     }
 }

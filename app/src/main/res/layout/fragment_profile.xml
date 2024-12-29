@@ -11,33 +11,49 @@
 
 
     <Button
-        android:id="@+id/markerGroups"
+        android:id="@+id/buttonMarkerGroups"
+        style="@style/RegisterButtonStyle"
         android:layout_width="310dp"
         android:layout_height="65dp"
+        android:background="@drawable/button_register_background"
         android:text="Группы маркеров"
         android:textSize="17sp"
-        android:background="@drawable/button_register_background"
-        style="@style/RegisterButtonStyle"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.493"
+        app:layout_constraintHorizontal_bias="0.495"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/Friends"
-        app:layout_constraintVertical_bias="0.296" />
+        app:layout_constraintTop_toBottomOf="@+id/buttonFriends"
+        app:layout_constraintVertical_bias="0.143" />
+
 
     <Button
-        android:id="@+id/Friends"
+        android:id="@+id/buttonFriends"
+        style="@style/RegisterButtonStyle"
         android:layout_width="310dp"
         android:layout_height="65dp"
-        android:layout_marginTop="280dp"
+        android:layout_marginTop="212dp"
+        android:background="@drawable/button_register_background"
         android:text="Друзья"
         android:textSize="17sp"
-        android:background="@drawable/button_register_background"
-        style="@style/RegisterButtonStyle"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.493"
+        app:layout_constraintHorizontal_bias="0.495"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/buttonLogout"
+        style="@style/RegisterButtonStyle"
+        android:layout_width="310dp"
+        android:layout_height="65dp"
+        android:background="@drawable/button_register_background"
+        android:text="Выйти из аккаунта"
+        android:textSize="17sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.495"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonMarkerGroups"
+        app:layout_constraintVertical_bias="0.194" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

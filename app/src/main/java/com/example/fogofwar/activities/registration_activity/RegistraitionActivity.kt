@@ -30,10 +30,20 @@ class RegistraitionActivity : AppCompatActivity() {
     private lateinit var buttonRegister: Button
 
     private lateinit var backendAPI: BackendAPI
-
+    private lateinit var userPhoneNumber: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val sharedPreferences = getSharedPreferences("AppPreferences", MODE_PRIVATE)
+        userPhoneNumber = sharedPreferences.getString("user_phone_number", "null")!!
+        if (userPhoneNumber != "null") {
+            val intent = Intent(this@RegistraitionActivity, BottomNavActivity::class.java)
+            intent.putExtra("user_phone_number", userPhoneNumber)
+            startActivity(intent)
+            finish()
+        }
+
         binding = ActivityRegistraitionBinding.inflate(layoutInflater)
         setContentView(binding.root)
         phoneNumberView = binding.phoneNumber
@@ -59,8 +69,9 @@ class RegistraitionActivity : AppCompatActivity() {
                 CoroutineScope(Dispatchers.IO).launch {
                     val response = backendAPI.register(RegisterReceiveRemote(loginView.text.toString(), phoneNumberView.text.toString(), passwordView.text.toString()))
                     if (response.isSuccessful) {
-                        val userPhoneNumber = phoneNumberView.text.toString()
+                        userPhoneNumber = phoneNumberView.text.toString()
                         withContext(Dispatchers.Main) {
+                            saveLogin()
                             val intent = Intent(this@RegistraitionActivity, BottomNavActivity::class.java)
                             intent.putExtra("user_phone_number", userPhoneNumber)
                             startActivity(intent)
@@ -80,5 +91,12 @@ class RegistraitionActivity : AppCompatActivity() {
             val intent = Intent(this, LoginActivity::class.java)
             startActivity(intent)
         }
+    }
+
+    private fun saveLogin() {
+        val sharedPreferences = getSharedPreferences("AppPreferences", MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putString("user_phone_number", userPhoneNumber)
+        editor.apply()
     }
 }

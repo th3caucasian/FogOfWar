@@ -1,5 +1,6 @@
 package com.example.fogofwar.activities.bottom_nav_activity.fragments.search
 
+import android.content.Context.MODE_PRIVATE
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -40,6 +41,11 @@ class FragmentSearch : Fragment() {
             .build()
         backendAPI = retrofit.create(BackendAPI::class.java)
         userPhoneNumber = arguments?.getString("user_phone_number")!!
+        userPhoneNumber = arguments?.getString("user_phone_number", "null")!!
+        if (userPhoneNumber == "null") {
+            val sharedPreferences = requireActivity().getSharedPreferences("AppPreferences", MODE_PRIVATE)
+            userPhoneNumber = sharedPreferences.getString("user_phone_number", "null")!!
+        }
 
 
         searchView = binding.searchView

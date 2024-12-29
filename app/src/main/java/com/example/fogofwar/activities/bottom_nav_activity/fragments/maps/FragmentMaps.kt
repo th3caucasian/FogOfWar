@@ -2,6 +2,7 @@ package com.example.fogofwar.activities.bottom_nav_activity.fragments.maps
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -335,7 +336,13 @@ class FragmentMaps : Fragment(), MapListener {
 
 
     private fun loadUserData() {
-        userPhoneNumber = arguments?.getString("user_phone_number")!!
+        userPhoneNumber = arguments?.getString("user_phone_number", "null")!!
+        if (userPhoneNumber == "null") {
+            val sharedPreferences = requireActivity().getSharedPreferences("AppPreferences", MODE_PRIVATE)
+            userPhoneNumber = sharedPreferences.getString("user_phone_number", "null")!!
+        }
+
+
         val getPointsReceiveRemote = GetPointsReceiveRemote(userPhoneNumber)
         val getMarkersReceiveRemote = GetMarkersReceiveRemote(userPhoneNumber)
         CoroutineScope(Dispatchers.IO).launch {
