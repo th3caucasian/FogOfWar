@@ -43,14 +43,14 @@ class LoginActivity : AppCompatActivity() {
         buttonLogin = binding.buttonLogin
 
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://192.168.69.194:8081/")
+            .baseUrl("http://45.91.8.232:8081/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         backendAPI = retrofit.create(BackendAPI::class.java)
 
         buttonLogin.setOnClickListener {
             if (phoneNumberView.text.length == 0) {
-                Toast.makeText(this, "Неверный формат номера телефона", 2).show()
+                Toast.makeText(this, "Неверный формат номера телефона", Toast.LENGTH_LONG).show()
             }
             else if (passwordView.text != "") {
                 CoroutineScope(Dispatchers.IO).launch {
@@ -63,10 +63,13 @@ class LoginActivity : AppCompatActivity() {
                             startActivity(intent)
                         }
                     }
+                    else {
+                        Toast.makeText(this@LoginActivity, "Такого пользователя не существует", Toast.LENGTH_LONG).show()
+                    }
                 }
             }
             else {
-                Toast.makeText(this, "Введите корректные данные", 2).show()
+                Toast.makeText(this, "Введите корректные данные", Toast.LENGTH_LONG).show()
             }
         }
 

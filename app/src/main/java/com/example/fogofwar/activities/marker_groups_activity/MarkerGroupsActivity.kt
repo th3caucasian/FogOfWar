@@ -19,6 +19,7 @@ import com.example.fogofwar.additions.MarkerGroupDTO
 import com.example.fogofwar.backend.BackendAPI
 import com.example.fogofwar.backend.remotes.add_marker_group.AddMarkerGroupReceiveRemote
 import com.example.fogofwar.backend.remotes.get_friends.GetFriendsReceiveRemote
+import com.example.fogofwar.backend.remotes.get_groups_of_marker.GetGroupsOfMarkerReceiveRemote
 import com.example.fogofwar.backend.remotes.get_marker_groups.GetMarkerGroupsReceiveRemote
 import com.example.fogofwar.databinding.ActivityFriendsBinding
 import com.example.fogofwar.databinding.ActivityMarkerGroupsBinding
@@ -57,7 +58,7 @@ class MarkerGroupsActivity : AppCompatActivity() {
         buttonAddGroup = binding.buttonAddGroup
 
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://192.168.69.194:8081/")
+            .baseUrl("http://45.91.8.232:8081/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         backendAPI = retrofit.create(BackendAPI::class.java)
@@ -66,8 +67,15 @@ class MarkerGroupsActivity : AppCompatActivity() {
         val markerId = intent.getLongExtra("marker_id", -1)
         val action = intent.getStringExtra("action")
         CoroutineScope(Dispatchers.IO).launch {
-            markerGroups = backendAPI.getMarkerGroups(GetMarkerGroupsReceiveRemote(userPhoneNumber)).body()!!.markerGroups
-            markerGroupsNames = markerGroups.map { it.name }.toMutableList()
+            if (action == "delete") {
+                markerGroupsNames = backendAPI.getGroupsOfMarker(GetGroupsOfMarkerReceiveRemote(markerId)).body()!!.markerGroups.toMutableList()
+            }
+            else {
+                markerGroups = backendAPI.getMarkerGroups(GetMarkerGroupsReceiveRemote(userPhoneNumber)).body()!!.markerGroups
+                markerGroupsNames = markerGroups.map { it.name }.toMutableList()
+            }
+
+
             withContext(Dispatchers.Main) {
                 adapter = RecycleViewAdapterMarkerGroups(userPhoneNumber, markerGroupsNames, this@MarkerGroupsActivity, markerId, action!!)
                 layoutManager = LinearLayoutManager(this@MarkerGroupsActivity)

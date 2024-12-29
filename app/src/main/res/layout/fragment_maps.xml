@@ -21,7 +21,7 @@
         app:layout_constraintHorizontal_bias="0.49"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.167"
+        app:layout_constraintVertical_bias="0.0"
         android:background="@drawable/rec_view_item_background">
 
     </org.osmdroid.views.MapView>
@@ -39,16 +39,19 @@
         app:layout_constraintHorizontal_bias="0.49"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.167"
+        app:layout_constraintVertical_bias="0.0"
         android:background="@drawable/rec_view_item_background">
 
     </org.osmdroid.views.MapView>
+
 
     <Button
         android:id="@+id/buttonToTaganrog"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="К Таганрогу"
+        android:background="@drawable/button_register_background"
+        style="@style/RegisterButtonStyle"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.891"
@@ -61,6 +64,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="К моей локации"
+        android:background="@drawable/button_register_background"
+        style="@style/RegisterButtonStyle"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.113"
@@ -73,6 +78,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Сменить карту"
+        android:background="@drawable/button_register_background"
+        style="@style/RegisterButtonStyle"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"

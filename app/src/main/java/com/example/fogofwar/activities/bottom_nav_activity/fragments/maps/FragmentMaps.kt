@@ -19,17 +19,15 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.example.database.columns.marker.MarkerDTO
 import com.example.features.updatePoints.UpdatePointsReceiveRemote
 import com.example.fogofwar.R
-import com.example.fogofwar.activities.friends_activity.FriendsActivity
 import com.example.fogofwar.activities.marker_groups_activity.MarkerGroupsActivity
 import com.example.fogofwar.additions.Point
 import com.example.fogofwar.backend.BackendAPI
 import com.example.fogofwar.backend.remotes.add_marker.AddMarkerReceiveRemote
-import com.example.fogofwar.backend.remotes.add_marker_to_group.AddMarkerToGroupReceiveRemote
 import com.example.fogofwar.backend.remotes.delete_marker.DeleteMarkerReceiveRemote
-import com.example.fogofwar.backend.remotes.delete_marker_from_group.DeleteMarkerFromGroupReceiveRemote
 import com.example.fogofwar.backend.remotes.get_groups_of_marker.GetGroupsOfMarkerReceiveRemote
 import com.example.fogofwar.backend.remotes.get_markers.GetMarkersReceiveRemote
 import com.example.fogofwar.backend.remotes.get_points.GetPointsReceiveRemote
@@ -44,7 +42,6 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.osmdroid.api.IMapController
@@ -73,7 +70,6 @@ class FragmentMaps : Fragment(), MapListener {
     private lateinit var mapEventsOverlay: MapEventsOverlay
 
     private lateinit var binding: FragmentMapsBinding
-    private lateinit var bindingAlertDialog: AlertDialogMarkerBinding
     private lateinit var mapView: MapView
     private lateinit var mapViewMarkers: MapView
     private lateinit var mapPointsController: IMapController
@@ -94,6 +90,7 @@ class FragmentMaps : Fragment(), MapListener {
     private var userMarkersFromDB = mutableListOf<MarkerDTO>()
     private var newlyClearedPoints = mutableListOf<Point>()
     private var activeMapFog = true
+    private val REQUEST_CODE = 100
 
 
 
@@ -225,15 +222,15 @@ class FragmentMaps : Fragment(), MapListener {
     private fun startLocationUpdates() {
         if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
             &&
-            ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+            ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+            &&
+            ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_BACKGROUND_LOCATION) != PackageManager.PERMISSION_GRANTED)
         {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+            // TODO: Доделать
+            ActivityCompat.requestPermissions(requireActivity(), arrayOf(
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION), REQUEST_CODE)
             return
         }
         fusedLocationClient.requestLocationUpdates(locationRequest, object : LocationCallback() {
@@ -248,7 +245,7 @@ class FragmentMaps : Fragment(), MapListener {
 
     private fun setupRetrofit() {
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://192.168.69.194:8081/")
+            .baseUrl("http://45.91.8.232:8081/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         backendAPI = retrofit.create(BackendAPI::class.java)
@@ -403,14 +400,27 @@ class FragmentMaps : Fragment(), MapListener {
             val alertDialogBuilder = AlertDialog.Builder(requireContext())
                 .setView(dialogView)
             val alertDialog = alertDialogBuilder.create()
+            var text: String
 
             CoroutineScope(Dispatchers.IO).launch {
                 groupNames = backendAPI.getGroupsOfMarker(GetGroupsOfMarkerReceiveRemote(marker.relatedObject as Long)).body()!!.markerGroups
                 withContext(Dispatchers.Main) {
-                    if (groupNames.isEmpty())
-                        groupNameView.text = "Без группы"
-                    else
-                        groupNameView.text = groupNames[0]
+                    if (groupNames.isEmpty()) {
+                        text = "Без группы"
+                        groupNameView.text = text
+                        buttonDeleteMarkerFromGroup.isClickable = false
+                        buttonDeleteMarkerFromGroup.backgroundTintList = ContextCompat.getColorStateList(requireActivity(), R.color.grey)
+                    }
+                    else {
+                        if (groupNames.size > 1)
+                            text = "${groupNames[0]} и ещё ${groupNames.size}"
+                        else
+                            text = groupNames[0]
+                        groupNameView.text = text
+                        buttonDeleteMarkerFromGroup.isClickable = true
+                        buttonDeleteMarkerFromGroup.backgroundTintList = ContextCompat.getColorStateList(requireActivity(), R.color.red)
+                    }
+
                 }
             }
 
@@ -420,6 +430,7 @@ class FragmentMaps : Fragment(), MapListener {
                 val intent = Intent(requireContext(), MarkerGroupsActivity::class.java)
                 intent.putExtra("action", "add")
                 intent.putExtra("marker_id", marker.relatedObject as Long)
+                intent.putExtra("user_phone_number", userPhoneNumber)
                 startActivity(intent)
             }
 
@@ -432,6 +443,7 @@ class FragmentMaps : Fragment(), MapListener {
                 val intent = Intent(requireContext(), MarkerGroupsActivity::class.java)
                 intent.putExtra("action", "delete")
                 intent.putExtra("marker_id", marker.relatedObject as Long)
+                intent.putExtra("user_phone_number", userPhoneNumber)
                 startActivity(intent)
             }
 

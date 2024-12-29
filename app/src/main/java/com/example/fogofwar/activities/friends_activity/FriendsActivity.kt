@@ -33,7 +33,7 @@ class FriendsActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://192.168.69.194:8081/")
+            .baseUrl("http://45.91.8.232:8081/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         backendAPI = retrofit.create(BackendAPI::class.java)

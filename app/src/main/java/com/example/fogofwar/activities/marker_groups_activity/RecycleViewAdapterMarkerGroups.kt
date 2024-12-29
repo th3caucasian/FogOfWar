@@ -37,7 +37,7 @@ class RecycleViewAdapterMarkerGroups(private var userPhoneNumber: String,
         private val buttonDelete: ImageButton = v.findViewById(R.id.buttonDelete)
 
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://192.168.69.194:8081/")
+            .baseUrl("http://45.91.8.232:8081/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         val backendAPI = retrofit.create(BackendAPI::class.java)

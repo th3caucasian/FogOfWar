@@ -43,17 +43,17 @@ class RegistraitionActivity : AppCompatActivity() {
         buttonRegister = binding.buttonRegister
 
         val retrofit = Retrofit.Builder()
-            .baseUrl("http://192.168.69.194:8081/")
+            .baseUrl("http://45.91.8.232:8081/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         backendAPI = retrofit.create(BackendAPI::class.java)
 
         buttonRegister.setOnClickListener {
             if (phoneNumberView.text.length != 11) {
-                Toast.makeText(this, "Неверный формат номера телефона", 2).show()
+                Toast.makeText(this, "Неверный формат номера телефона", Toast.LENGTH_LONG).show()
             }
             else if (loginView.text.length < 2) {
-                Toast.makeText(this, "Имя пользователя должно состоять минимум из двух символов", 2).show()
+                Toast.makeText(this, "Имя пользователя должно состоять минимум из двух символов", Toast.LENGTH_LONG).show()
             }
             else if (passwordView.text != "") {
                 CoroutineScope(Dispatchers.IO).launch {
@@ -66,10 +66,13 @@ class RegistraitionActivity : AppCompatActivity() {
                             startActivity(intent)
                         }
                     }
+                    else {
+                        Toast.makeText(this@RegistraitionActivity, "Такой пользователь уже существует", Toast.LENGTH_LONG).show()
+                    }
                 }
             }
             else {
-                Toast.makeText(this, "Введите корректный пароль", 2).show()
+                Toast.makeText(this, "Введите корректный пароль", Toast.LENGTH_LONG).show()
             }
         }
 
