@@ -68,17 +68,18 @@ class RegistraitionActivity : AppCompatActivity() {
             else if (passwordView.text != "") {
                 CoroutineScope(Dispatchers.IO).launch {
                     val response = backendAPI.register(RegisterReceiveRemote(loginView.text.toString(), phoneNumberView.text.toString(), passwordView.text.toString()))
-                    if (response.isSuccessful) {
-                        userPhoneNumber = phoneNumberView.text.toString()
-                        withContext(Dispatchers.Main) {
+                    withContext(Dispatchers.Main) {
+                        if (response.isSuccessful) {
+                            userPhoneNumber = phoneNumberView.text.toString()
                             saveLogin()
                             val intent = Intent(this@RegistraitionActivity, BottomNavActivity::class.java)
                             intent.putExtra("user_phone_number", userPhoneNumber)
                             startActivity(intent)
+
                         }
-                    }
-                    else {
-                        Toast.makeText(this@RegistraitionActivity, "Такой пользователь уже существует", Toast.LENGTH_LONG).show()
+                        else {
+                            Toast.makeText(this@RegistraitionActivity, "Такой пользователь уже существует", Toast.LENGTH_LONG).show()
+                        }
                     }
                 }
             }

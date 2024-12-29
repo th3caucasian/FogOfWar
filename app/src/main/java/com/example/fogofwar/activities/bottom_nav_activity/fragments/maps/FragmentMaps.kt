@@ -127,7 +127,7 @@ class FragmentMaps : Fragment(), MapListener {
         mapView.tileProvider = tileProvider
         mapView.setMultiTouchControls(true)
         mapView.getLocalVisibleRect(Rect())
-        mapView.setOnTouchListener {v, event ->
+        mapView.setOnTouchListener {v, _ ->
             v.parent?.requestDisallowInterceptTouchEvent(true)
             false
         }
@@ -322,7 +322,7 @@ class FragmentMaps : Fragment(), MapListener {
             try {
                 CoroutineScope(Dispatchers.IO).launch {
                     val updatePointsReceiveRemote = UpdatePointsReceiveRemote(userPhoneNumber, newlyClearedPoints)
-                    val result = backendAPI.updatePoints(updatePointsReceiveRemote)
+                    backendAPI.updatePoints(updatePointsReceiveRemote)
                     newlyClearedPoints.clear()
                 }
             }

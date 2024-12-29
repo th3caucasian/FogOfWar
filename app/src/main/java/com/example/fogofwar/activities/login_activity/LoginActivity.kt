@@ -55,17 +55,18 @@ class LoginActivity : AppCompatActivity() {
             else if (passwordView.text != "") {
                 CoroutineScope(Dispatchers.IO).launch {
                     val response = backendAPI.login(LoginReceiveRemote(phoneNumberView.text.toString(), passwordView.text.toString()))
-                    if (response.isSuccessful) {
-                        userPhoneNumber = phoneNumberView.text.toString()
-                        withContext(Dispatchers.Main) {
+                    withContext(Dispatchers.Main) {
+                        if (response.isSuccessful) {
+                            userPhoneNumber = phoneNumberView.text.toString()
                             saveLogin()
                             val intent = Intent(this@LoginActivity, BottomNavActivity::class.java)
                             intent.putExtra("user_phone_number", userPhoneNumber)
                             startActivity(intent)
+
                         }
-                    }
-                    else {
-                        Toast.makeText(this@LoginActivity, "Такого пользователя не существует", Toast.LENGTH_LONG).show()
+                        else {
+                            Toast.makeText(this@LoginActivity, "Такого пользователя не существует", Toast.LENGTH_LONG).show()
+                        }
                     }
                 }
             }
