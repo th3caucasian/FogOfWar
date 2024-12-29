@@ -16,8 +16,8 @@
         android:layout_marginStart="16dp"
         android:fontFamily="sans-serif-medium"
         android:text="TextView"
-        android:textColor="@color/black"
-        android:textSize="25sp"
+        android:textColor="@color/orange"
+        android:textSize="23sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

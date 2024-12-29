@@ -66,22 +66,27 @@ class RegistraitionActivity : AppCompatActivity() {
                 Toast.makeText(this, "Имя пользователя должно состоять минимум из двух символов", Toast.LENGTH_LONG).show()
             }
             else if (passwordView.text != "") {
-                CoroutineScope(Dispatchers.IO).launch {
-                    val response = backendAPI.register(RegisterReceiveRemote(loginView.text.toString(), phoneNumberView.text.toString(), passwordView.text.toString()))
-                    withContext(Dispatchers.Main) {
-                        if (response.isSuccessful) {
-                            userPhoneNumber = phoneNumberView.text.toString()
-                            saveLogin()
-                            val intent = Intent(this@RegistraitionActivity, BottomNavActivity::class.java)
-                            intent.putExtra("user_phone_number", userPhoneNumber)
-                            startActivity(intent)
+                try {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val response = backendAPI.register(RegisterReceiveRemote(loginView.text.toString(), phoneNumberView.text.toString(), passwordView.text.toString()))
+                        withContext(Dispatchers.Main) {
+                            if (response.isSuccessful) {
+                                userPhoneNumber = phoneNumberView.text.toString()
+                                saveLogin()
+                                val intent = Intent(this@RegistraitionActivity, BottomNavActivity::class.java)
+                                intent.putExtra("user_phone_number", userPhoneNumber)
+                                startActivity(intent)
 
-                        }
-                        else {
-                            Toast.makeText(this@RegistraitionActivity, "Такой пользователь уже существует", Toast.LENGTH_LONG).show()
+                            }
+                            else {
+                                Toast.makeText(this@RegistraitionActivity, "Такой пользователь уже существует", Toast.LENGTH_LONG).show()
+                            }
                         }
                     }
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Не удалось подключиться к серверу", Toast.LENGTH_LONG).show()
                 }
+
             }
             else {
                 Toast.makeText(this, "Введите корректный пароль", Toast.LENGTH_LONG).show()

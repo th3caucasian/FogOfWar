@@ -1,0 +1,32 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+
+    <EditText
+        android:id="@+id/markerDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:hint="Добавьте описание маркера"
+        android:textStyle="italic"
+        android:textSize="25sp"
+        android:textColor="@color/white"
+        android:textAlignment="center"
+        android:layout_marginTop="10dp"
+        app:layout_constraintVertical_bias="0.32" />
+
+
+    <Button
+        android:id="@+id/buttonAddMarker"
+        android:layout_width="match_parent"
+        android:layout_height="49dp"
+        android:gravity="center"
+        android:backgroundTint="@color/green"
+        android:textColor="@color/white"
+        android:text="Добавить маркер" />
+
+</LinearLayout>

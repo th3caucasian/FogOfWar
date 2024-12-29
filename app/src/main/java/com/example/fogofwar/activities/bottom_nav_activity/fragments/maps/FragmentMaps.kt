@@ -17,7 +17,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -41,6 +44,7 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -75,7 +79,7 @@ class FragmentMaps : Fragment(), MapListener {
     private lateinit var mapViewMarkers: MapView
     private lateinit var mapPointsController: IMapController
     private lateinit var mapMarkersController: IMapController
-    private lateinit var buttonMyLocation: Button
+    private lateinit var buttonMyLocation: FloatingActionButton
     private lateinit var buttonToTaganrog: Button
     private lateinit var buttonChangeMap: Button
 
@@ -162,10 +166,22 @@ class FragmentMaps : Fragment(), MapListener {
         mapMarkersController = mapViewMarkers.controller
         mapMarkersController.setZoom(18.0)
 
+
+        val dialogView = layoutInflater.inflate(R.layout.alert_dialog_marker_description, null)
+        val markerDescription = dialogView.findViewById<EditText>(R.id.markerDescription)
+        val buttonAddMarker = dialogView.findViewById<Button>(R.id.buttonAddMarker)
+
+        val alertDialogBuilder = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+        val alertDialog = alertDialogBuilder.create()
         mapEventsOverlay = MapEventsOverlay(object : MapEventsReceiver {
             override fun singleTapConfirmedHelper(p: GeoPoint?): Boolean {
                 p?.let {
-                    addMarker(it, "ЭТОТ МАРКЕР ПОСТАВЛЕН ЗДЕСЬ ${p.latitude}, ${p.longitude}", null)
+                    alertDialog.show()
+                    buttonAddMarker.setOnClickListener {
+                        addMarker(p, markerDescription.text.toString(), null)
+                        alertDialog.cancel()
+                    }
                 }
                 return true
             }
@@ -258,16 +274,20 @@ class FragmentMaps : Fragment(), MapListener {
         buttonToTaganrog = fragmentMapsBinding.buttonToTaganrog
         buttonChangeMap = fragmentMapsBinding.button
         buttonMyLocation.setOnClickListener {
-            when (activeMapFog){
-                true -> {
-                    mapPointsController.animateTo(myLocationOverlay.myLocation)
-                    mapPointsController.setZoom(16.0)
-                }
-                false -> {
-                    mapMarkersController.animateTo(myLocationOverlay.myLocation)
-                    mapMarkersController.setZoom(16.0)
-                }
-            }
+//            when (activeMapFog){
+//                true -> {
+//                    mapPointsController.animateTo(myLocationOverlay.myLocation)
+//                    mapPointsController.setZoom(16.0)
+//                }
+//                false -> {
+//                    mapMarkersController.animateTo(myLocationOverlay.myLocation)
+//                    mapMarkersController.setZoom(16.0)
+//                }
+//            }
+            Log.d("LOCATION", "${myLocationOverlay.myLocation}")
+            mapPointsController.animateTo(myLocationOverlay.myLocation)
+            mapMarkersController.animateTo(myLocationOverlay.myLocation)
+            mapMarkersController.setZoom(16.0)
 
         }
 
@@ -288,12 +308,11 @@ class FragmentMaps : Fragment(), MapListener {
         buttonChangeMap.setOnClickListener {
             when (activeMapFog) {
                 true -> {
-                        mapView.visibility = View.INVISIBLE
-                        mapViewMarkers.visibility = View.VISIBLE
-                        mapViewMarkers.onResume()
-                        mapView.onPause()
-                        activeMapFog = !activeMapFog
-                        mapPointsController.animateTo(GeoPoint(47.207451,38.9398434)) // Taganrog
+                    mapView.visibility = View.INVISIBLE
+                    mapViewMarkers.visibility = View.VISIBLE
+                    mapViewMarkers.onResume()
+                    mapView.onPause()
+                    activeMapFog = !activeMapFog
                 }
                 false -> {
                     mapViewMarkers.visibility = View.INVISIBLE
@@ -301,7 +320,6 @@ class FragmentMaps : Fragment(), MapListener {
                     mapView.onResume()
                     mapViewMarkers.onPause()
                     activeMapFog = !activeMapFog
-                    mapMarkersController.animateTo(GeoPoint(47.207451,38.9398434))  // Taganrog
                 }
 
             }
@@ -318,7 +336,7 @@ class FragmentMaps : Fragment(), MapListener {
 
         if (!userPointsFromDB.contains(point))
             newlyClearedPoints += point
-        if (newlyClearedPoints.size == 1) {
+        if (newlyClearedPoints.size == 5) {
             try {
                 CoroutineScope(Dispatchers.IO).launch {
                     val updatePointsReceiveRemote = UpdatePointsReceiveRemote(userPhoneNumber, newlyClearedPoints)
@@ -345,24 +363,30 @@ class FragmentMaps : Fragment(), MapListener {
 
         val getPointsReceiveRemote = GetPointsReceiveRemote(userPhoneNumber)
         val getMarkersReceiveRemote = GetMarkersReceiveRemote(userPhoneNumber)
-        CoroutineScope(Dispatchers.IO).launch {
-            val pointsResponse = backendAPI.getPoints(getPointsReceiveRemote).body()
-            if (pointsResponse != null) {
-                userPointsFromDB = pointsResponse.points!!.toMutableList()
-                for (point in userPointsFromDB) {
-                    val pointAsGeo = GeoPoint(point.latitude, point.longitude)
-                    fogOverlay.addClearedTile(pointAsGeo)
+        try {
+            CoroutineScope(Dispatchers.IO).launch {
+                val pointsResponse = backendAPI.getPoints(getPointsReceiveRemote).body()
+                if (pointsResponse != null) {
+                    userPointsFromDB = pointsResponse.points!!.toMutableList()
+                    for (point in userPointsFromDB) {
+                        val pointAsGeo = GeoPoint(point.latitude, point.longitude)
+                        fogOverlay.addClearedTile(pointAsGeo)
+                    }
                 }
-            }
 
-            val markersResponse = backendAPI.getMarkers(getMarkersReceiveRemote).body()
-            if (markersResponse != null) {
-                userMarkersFromDB = markersResponse.markers.toMutableList()
-                for (marker in userMarkersFromDB) {
-                    val pointAsGeo = GeoPoint(marker.location.latitude, marker.location.longitude)
-                    addMarker(pointAsGeo, marker.description, marker.id)
+                val markersResponse = backendAPI.getMarkers(getMarkersReceiveRemote).body()
+                if (markersResponse != null) {
+                    userMarkersFromDB = markersResponse.markers.toMutableList()
+                    for (marker in userMarkersFromDB) {
+                        val pointAsGeo =
+                            GeoPoint(marker.location.latitude, marker.location.longitude)
+                        addMarker(pointAsGeo, marker.description, marker.id)
+                    }
                 }
             }
+        }
+        catch (e: Exception) {
+            Toast.makeText(requireActivity(), "Не удалось загрузить данные пользователя", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -387,6 +411,7 @@ class FragmentMaps : Fragment(), MapListener {
             }
             catch (e: Exception) {
                 e.printStackTrace()
+                Toast.makeText(requireActivity(), "Не удалось сохранить маркер", Toast.LENGTH_LONG).show()
             }
         }
 
@@ -427,6 +452,7 @@ class FragmentMaps : Fragment(), MapListener {
                         buttonDeleteMarkerFromGroup.isClickable = true
                         buttonDeleteMarkerFromGroup.backgroundTintList = ContextCompat.getColorStateList(requireActivity(), R.color.red)
                     }
+                    alertDialog.show()
 
                 }
             }
@@ -439,6 +465,7 @@ class FragmentMaps : Fragment(), MapListener {
                 intent.putExtra("marker_id", marker.relatedObject as Long)
                 intent.putExtra("user_phone_number", userPhoneNumber)
                 startActivity(intent)
+                alertDialog.cancel()
             }
 
             buttonDeleteMarker.setOnClickListener {
@@ -452,10 +479,9 @@ class FragmentMaps : Fragment(), MapListener {
                 intent.putExtra("marker_id", marker.relatedObject as Long)
                 intent.putExtra("user_phone_number", userPhoneNumber)
                 startActivity(intent)
+                alertDialog.cancel()
             }
 
-
-            alertDialog.show()
             true
         }
 
@@ -475,6 +501,7 @@ class FragmentMaps : Fragment(), MapListener {
         }
         catch (e: Exception) {
             e.printStackTrace()
+            Toast.makeText(requireActivity(), "Не удалось удалить маркер с сервера", Toast.LENGTH_LONG).show()
         }
     }
 

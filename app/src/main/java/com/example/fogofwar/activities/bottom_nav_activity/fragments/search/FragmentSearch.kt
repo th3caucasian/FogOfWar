@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -74,14 +75,19 @@ class FragmentSearch : Fragment() {
     private fun filterList(queryPhoneNumber: String?) {
         queryPhoneNumber?.let {
             CoroutineScope(Dispatchers.IO).launch {
-                if (backendAPI.getUser(GetUserReceiveRemote(queryPhoneNumber)).isSuccessful && queryPhoneNumber != userPhoneNumber) {
-                    if (userList.size == 0)
-                        userList += queryPhoneNumber
-                    else
-                        userList[0] = queryPhoneNumber
+                try {
+                    if (backendAPI.getUser(GetUserReceiveRemote(queryPhoneNumber)).isSuccessful && queryPhoneNumber != userPhoneNumber) {
+                        if (userList.size == 0)
+                            userList += queryPhoneNumber
+                        else
+                            userList[0] = queryPhoneNumber
+                    }
+                    withContext(Dispatchers.Main) {
+                        adapter.setFilteredList(userList)
+                    }
                 }
-                withContext(Dispatchers.Main) {
-                    adapter.setFilteredList(userList)
+                catch (e: Exception) {
+                    Toast.makeText(requireActivity(), "Не удалось загрузить результаты поиска", Toast.LENGTH_LONG).show()
                 }
             }
         }

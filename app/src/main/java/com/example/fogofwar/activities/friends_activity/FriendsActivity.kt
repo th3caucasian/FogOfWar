@@ -1,6 +1,7 @@
 package com.example.fogofwar.activities.friends_activity
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -42,16 +43,29 @@ class FriendsActivity : AppCompatActivity() {
         callerActivity = intent.getStringExtra("caller_activity")
         if (callerActivity == "MarkerGroupsActivity")
             markerName = intent.getStringExtra("marker_name")
-        CoroutineScope(Dispatchers.IO).launch {
-            userFriends = backendAPI.getFriends(GetFriendsReceiveRemote(userPhoneNumber)).body()!!.friendsNumbers
-            withContext(Dispatchers.Main) {
-                adapter = RecycleViewAdapterFriends(userPhoneNumber, userFriends, callerActivity, markerName, this@FriendsActivity)
-                layoutManager = LinearLayoutManager(this@FriendsActivity)
-                recyclerView = binding.recyclerView
-                recyclerView.setHasFixedSize(true)
-                recyclerView.layoutManager = layoutManager
-                recyclerView.adapter = adapter
+        try {
+            CoroutineScope(Dispatchers.IO).launch {
+                userFriends = backendAPI.getFriends(GetFriendsReceiveRemote(userPhoneNumber))
+                    .body()!!.friendsNumbers
+                withContext(Dispatchers.Main) {
+                    adapter = RecycleViewAdapterFriends(
+                        userPhoneNumber,
+                        userFriends,
+                        callerActivity,
+                        markerName,
+                        this@FriendsActivity
+                    )
+                    layoutManager = LinearLayoutManager(this@FriendsActivity)
+                    recyclerView = binding.recyclerView
+                    recyclerView.setHasFixedSize(true)
+                    recyclerView.layoutManager = layoutManager
+                    recyclerView.adapter = adapter
+                }
             }
+        } catch (e: Exception) {
+            Toast.makeText(this, "Не удалось загрузить данные друзей", Toast.LENGTH_LONG).show()
         }
+
+
     }
 }

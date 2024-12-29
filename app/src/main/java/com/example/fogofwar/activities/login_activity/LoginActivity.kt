@@ -53,22 +53,27 @@ class LoginActivity : AppCompatActivity() {
                 Toast.makeText(this, "Неверный формат номера телефона", Toast.LENGTH_LONG).show()
             }
             else if (passwordView.text != "") {
-                CoroutineScope(Dispatchers.IO).launch {
-                    val response = backendAPI.login(LoginReceiveRemote(phoneNumberView.text.toString(), passwordView.text.toString()))
-                    withContext(Dispatchers.Main) {
-                        if (response.isSuccessful) {
-                            userPhoneNumber = phoneNumberView.text.toString()
-                            saveLogin()
-                            val intent = Intent(this@LoginActivity, BottomNavActivity::class.java)
-                            intent.putExtra("user_phone_number", userPhoneNumber)
-                            startActivity(intent)
+                try {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val response = backendAPI.login(LoginReceiveRemote(phoneNumberView.text.toString(), passwordView.text.toString()))
+                        withContext(Dispatchers.Main) {
+                            if (response.isSuccessful) {
+                                userPhoneNumber = phoneNumberView.text.toString()
+                                saveLogin()
+                                val intent = Intent(this@LoginActivity, BottomNavActivity::class.java)
+                                intent.putExtra("user_phone_number", userPhoneNumber)
+                                startActivity(intent)
 
-                        }
-                        else {
-                            Toast.makeText(this@LoginActivity, "Такого пользователя не существует", Toast.LENGTH_LONG).show()
+                            }
+                            else {
+                                Toast.makeText(this@LoginActivity, "Такого пользователя не существует", Toast.LENGTH_LONG).show()
+                            }
                         }
                     }
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Не удалось подключиться к серверу", Toast.LENGTH_LONG).show()
                 }
+
             }
             else {
                 Toast.makeText(this, "Введите корректные данные", Toast.LENGTH_LONG).show()

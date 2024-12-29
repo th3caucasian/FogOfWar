@@ -6,6 +6,7 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -102,7 +103,6 @@ class MarkerGroupsActivity : AppCompatActivity() {
             var privacy: Boolean
             val alertDialogBuilder = AlertDialog.Builder(this)
                 .setView(bindingDialog.root)
-                .setTitle("Что сделать с маркером?")
             val alertDialog = alertDialogBuilder.create()
 
             buttonDialogAddGroup.setOnClickListener {
@@ -110,12 +110,16 @@ class MarkerGroupsActivity : AppCompatActivity() {
                 groupDescription = groupDescriptionView.text.toString()
                 privacy = checkBoxView.isChecked
                 if (groupName.isNotEmpty()) {
-                    CoroutineScope(Dispatchers.IO).launch {
-                        backendAPI.addMarkerGroup(AddMarkerGroupReceiveRemote(userPhoneNumber, groupName, groupDescription, privacy))
-                        withContext(Dispatchers.Main) {
-                            alertDialog.hide()
-                            adapter.addGroup(groupName)
+                    try {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            backendAPI.addMarkerGroup(AddMarkerGroupReceiveRemote(userPhoneNumber, groupName, groupDescription, privacy))
+                            withContext(Dispatchers.Main) {
+                                alertDialog.hide()
+                                adapter.addGroup(groupName)
+                            }
                         }
+                    } catch (e: Exception) {
+                        Toast.makeText(this, "Не удалось загрузить данные маркеров", Toast.LENGTH_LONG).show()
                     }
                 }
             }

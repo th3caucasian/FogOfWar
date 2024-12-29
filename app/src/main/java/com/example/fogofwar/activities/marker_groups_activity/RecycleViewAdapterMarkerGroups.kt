@@ -70,6 +70,7 @@ class RecycleViewAdapterMarkerGroups(private var userPhoneNumber: String,
                 val intent = Intent(activityContext, FriendsActivity::class.java)
                 intent.putExtra("caller_activity", "MarkerGroupsActivity")
                 intent.putExtra("marker_name", textView.text.toString())
+                intent.putExtra("user_phone_number", vhUserPhoneNumber)
                 activityContext.startActivity(intent)
             }
 
